@@ -1,8 +1,7 @@
 tasks:
 #  - command: pip3 install -U platformio && platformio run -e d1_mini
 - command: pip3 install -U platformio
-- command: pip install --upgrade pip
-- command: pip install esptool
+- command: pip3 install esptools
 - command: platformio run
 
 image:
