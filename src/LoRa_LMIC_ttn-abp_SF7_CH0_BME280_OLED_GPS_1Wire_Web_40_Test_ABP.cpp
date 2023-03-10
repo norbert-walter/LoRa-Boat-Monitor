@@ -25,7 +25,7 @@
  *******************************************************************************
  *
  * Attention! Check for EU868 the settings in:
- * .pio/libdeps/heltec_wifi_lora_32_V2/MCCI LoRaWAN LMIC library/project_config/lmic_project_config.h
+ * .pio/libdeps/heltec_wifi_lora_32_V2/IBM LMIC framework/src/lmic/config.h
  *
  * Set the #define CFG-eu868 1
  * 
