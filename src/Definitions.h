@@ -4,7 +4,7 @@
 // Passwort settings
 String transactionID = String(random(0, 99999999));// Generate a random transaction ID by initialisation
 String raw = "";                    // Uncrypted raw data
-String crypt = "";                  // Crypted data
+String md5crypt = "";               // Crypted data
 
 //MAC Address
 uint64_t macAddress;                // MAC address equivalent to Chip-ID

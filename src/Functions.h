@@ -298,7 +298,7 @@ String cryptPassword(String password){
   raw = password + transactionID;
   md5.add(raw);
   md5.calculate();
-  crypt = md5.toString();
+  md5crypt = md5.toString();
   DebugPrintln(3, "Crypt password");
   DebugPrint(3, "Password: ");
   DebugPrintln(3, password);
@@ -307,9 +307,9 @@ String cryptPassword(String password){
   DebugPrint(3, "Raw Data: ");
   DebugPrintln(3, raw);
   DebugPrint(3, "MD5 Hash: ");
-  DebugPrintln(3, crypt);
+  DebugPrintln(3, md5crypt);
   // Give back the crypted password
-  return crypt;
+  return md5crypt;
 }
 
 int encryptPassword(String password, String md5hash){
@@ -318,7 +318,7 @@ int encryptPassword(String password, String md5hash){
   raw = password + transactionID;
   md5.add(raw);
   md5.calculate();
-  crypt = md5.toString();
+  md5crypt = md5.toString();
   DebugPrintln(3, "Encrypt password");
   DebugPrint(3, "Password: ");
   DebugPrintln(3, password);
@@ -327,11 +327,11 @@ int encryptPassword(String password, String md5hash){
   DebugPrint(3, "Raw Data: ");
   DebugPrintln(3, raw);
   DebugPrint(3, "MD5 Hash: ");
-  DebugPrintln(3, crypt);
+  DebugPrintln(3, md5crypt);
   DebugPrint(3, "MD5 Hash2: ");
-  DebugPrintln(3, crypt);
+  DebugPrintln(3, md5crypt);
   // Compare the received hash
-  if(crypt == md5hash){
+  if(md5crypt == md5hash){
     return 1;
   }
   else{
