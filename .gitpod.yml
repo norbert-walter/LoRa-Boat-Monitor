@@ -1,7 +1,7 @@
 tasks:
 #  - command: pip3 install -U platformio && platformio run -e d1_mini
 - init: pip install esptool
-- command: pip3 install -U platformio && platformio run && cp ./.pio/build/heltec_wifi_lora_32_V2/firmware.bin ./docs/test.bin
+- command: pip3 install -U platformio && platformio run && cp ./.pio/build/heltec_wifi_lora_32_V2/firmware.bin ./docs/firmware.bmb
 
 image:
   file: .gitpod.Dockerfile
