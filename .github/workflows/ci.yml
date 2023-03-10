@@ -22,4 +22,4 @@ jobs:
       - name: Build
         run: |
           pio run
-          mv .pio/build/heltec_wifi_lora_32_V2/firmware.bin docs/firmware.bmb
+          cp ./.pio/build/heltec_wifi_lora_32_V2/firmware.bin ./docs/firmware.bmb
