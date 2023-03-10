@@ -6,7 +6,7 @@
       {
         "chipFamily": "ESP32",
         "parts": [
-          { "path": "https://github.com/norbert-walter/LoRa-Boat-Monitor/blob/master/docs/firmware.bin", "offset": 0 }
+          { "path": "https://norbert-walter.github.io/LoRa-Boat-Monitor/firmware_V1.05.bmb", "offset": 0 }
         ]
       }
     ]
