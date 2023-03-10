@@ -1,11 +1,12 @@
 tasks:
 #  - command: pip3 install -U platformio && platformio run -e d1_mini
 - command: pip3 install -U platformio
-- command: pip3 install esptools
+- command: pip install --upgrade pip
+- command: pip install esptool
 - command: platformio run
 
 image:
-  file: .gitpod.Dockerfile
+  file: .gitpod.Dockerfilepip
 
 vscode:
   extensions:
