@@ -1,0 +1,13 @@
+{
+    "name": "LoRa Boat Monitor Firmware",
+    "version": "V1.05",
+    "new_install_prompt_erase": false,
+    "builds": [
+      {
+        "chipFamily": "ESP32",
+        "parts": [
+          { "path": "https://norbert-walter.github.io/NMEA0183-Level-Sensor-DS1603L/firmware.bin", "offset": 0 }
+        ]
+      }
+    ]
+  }
