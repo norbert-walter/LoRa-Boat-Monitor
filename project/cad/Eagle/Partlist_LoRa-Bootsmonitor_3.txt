@@ -1,0 +1,22 @@
+Stückliste
+
+Menge Wert               Device              Bauteile               
+2                        AKL_092_04          X1, X2                 
+1                        AKL_092_06          X3                     
+1                        LORA32_HELTEC_V2    Q1                     
+4     1N4007             BYD13               D1, D2, D5, D7
+1     500		         R-EU_0207/10        R1 
+5     1k                 R-EU_0207/10        R2, R3, R4, R7     
+1     5V                 RELAIS              K1                     
+1     6PKE22A            1N4728              D4                     
+1     10k                R-EU_0207/10        R5, R8                     
+1     33k                R-EU_0207/10        R6                     
+1     47u                CPOL-EUE5-8.5       C1                     
+1     BC557B             BC557B-PNP-TO92-EBC T1                     
+1     BME280             BME280              Q3                     
+2     BZX55C3V3          BZX55               D3, D6                 
+1     GY-GPS6MV2         GY_GPS6MV2_H        Q2                     
+1     LM2596_DCDC        LM2596_DCDC         Q5                     
+6     MOUNT-HOLE2,5      MOUNT-HOLE2,5       H5, H6, H7, H8, H9, H10
+4     MOUNT-PAD-ROUND3.2 MOUNT-PAD-ROUND3.2  H1, H2, H3, H4         
+1     SFH617A-4          SFH610              OK1                    
