@@ -1,6 +1,6 @@
 ## LoRa Boat Monitor
 
-![LoRa Boat Monitor](project/Pictures/LoRa_Bootsmonitor.png)
+![LoRa Boat Monitor](project/pictures/LoRa_Bootsmonitor.png)
 
 Image: LoRa Boat Monitor
 
