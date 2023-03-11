@@ -87,9 +87,10 @@ I have completed many tasks but still not everything is perfect so far.
     - [x] Web-Updater
     - [x] Web-Configurator
     - [x] Web server as data display
+    - [x] VE.Direct support for Victron
     - [ ] Ubidots connection via WiFi
-    - [ ] NMEA0183 WiFi
-    - [ ] NMEA0183 Serial
+    - [x] NMEA0183 WiFi
+    - [x] NMEA0183 Serial
     - [ ] MQTT
     - [x] Andoid App
     - [x] LoRa gateway firmware
