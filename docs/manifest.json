@@ -8,7 +8,6 @@
         "parts": [
           { "path": "https://norbert-walter.github.io/LoRa-Boat-Monitor/bootloader.bin", "offset": 4096 },
           { "path": "https://norbert-walter.github.io/LoRa-Boat-Monitor/partitions.bin", "offset": 32768 },
-          { "path": "https://norbert-walter.github.io/LoRa-Boat-Monitor/boot.bin", "offset": 57344 },
           { "path": "https://norbert-walter.github.io/LoRa-Boat-Monitor/firmware.bin", "offset": 65536 }
         ]
       }
