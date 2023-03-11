@@ -109,13 +109,13 @@ void setup() {
                     NULL,       /* Parameter of the task */
                     1,          /* Priority of the task */
                     &Task1,     /* Task handle to keep track of created task */
-                    0);         /* Pin task to core 0 */                  
+                    0);         /* Pin task to core 0 */
   delay(500);
-  
+
   // Read the first byte from the EEPROM
   EEPROM.begin(sizeEEPROM);
   value = EEPROM.read(cfgStart);
-  EEPROM.end(); 
+  EEPROM.end();
   // If the fist Byte not identical to the first value in the default configuration then saving a default configuration in EEPROM.
   // Means if the EEPROM empty then saving a default configuration.
   if(value == defconf.valid){
@@ -153,7 +153,7 @@ void setup() {
   //##### Start OLED #####
   u8x8.begin();
   u8x8.setPowerSave(0);
-  
+
   u8x8.setFont(u8x8_font_chroma48medium8_r);
   u8x8.clearDisplay();
   u8x8.drawString(0,0,"NoWa(C)OBP");
@@ -161,7 +161,7 @@ void setup() {
   u8x8.drawString(0,2,"Connection to:");
   u8x8.drawString(0,3,actconf.cssid);
   u8x8.refreshDisplay();    // Only required for SSD1606/7
-  
+
   // ESP8266 Information Data
   DebugPrintln(3, "Booting Sketch...");
   DebugPrintln(3, "");
@@ -176,7 +176,7 @@ void setup() {
   DebugPrintln(3, ESP.getSdkVersion());
   DebugPrint(3, "ESP32 Chip-ID: ");
   DebugPrintln(3, chipId);
-  DebugPrint(3, "ESP32 Speed [MHz]: ");  
+  DebugPrint(3, "ESP32 Speed [MHz]: ");
   DebugPrintln(3, ESP.getCpuFreqMHz());
   DebugPrint(3, "Free Heap Size [Bytes]: ");
   DebugPrintln(3, ESP.getFreeHeap());
@@ -194,7 +194,7 @@ void setup() {
   DebugPrintln(3, "Loading actual EEPROM config");
   actconf = loadEEPROMConfig();
   DebugPrintln(3, "");
- 
+
   DebugPrint(3, "Sensor ID: ");
   DebugPrintln(3, actconf.deviceID);
   DebugPrintln(3, "Sensor Type: LoRa1000");
@@ -207,7 +207,7 @@ void setup() {
   DebugPrintln(3, TANK1_IN);
   DebugPrintln(3, "Tank2 [%]: 0...100");
   DebugPrint(3, "Input Pin: GPIO ");
-  DebugPrintln(3, TANK2_IN); 
+  DebugPrintln(3, TANK2_IN);
   DebugPrintln(3, "Temp Sensor: SD18B20 1Wire");
   DebugPrintln(3, "Value Range [°C]: -55...125");
   DebugPrint(3, "Input Pin: GPIO ");
@@ -266,7 +266,7 @@ void setup() {
     MDNS.begin(hname.c_str());                              // Start mDNS service
     MDNS.addService("http", "tcp", actconf.httpport);       // HTTP service
     MDNS.addService("nmea-0183", "tcp", actconf.dataport);  // NMEA0183 dada service for AVnav
-  }  
+  }
   DebugPrintln(3, "mDNS service: activ");
   DebugPrint(3, "mDNS name: ");
   DebugPrint(3, hname);
@@ -283,7 +283,7 @@ void setup() {
   DebugPrintln(3, "");
 
   #include "ServerPages.h"    // Webserver pages request functions
-  
+
   // Connect to WiFi network
   DebugPrint(3, "Connecting WiFi client to ");
   DebugPrintln(3, actconf.cssid);
@@ -316,7 +316,7 @@ void setup() {
     u8x8.drawString(0,3,"Conection aborted");
     u8x8.refreshDisplay();    // Only required for SSD1606/7
   }
-  
+
   // Start the NMEA TCP server
   server.begin();
   DebugPrint(3, "NMEA-Server started at port: ");
@@ -333,12 +333,12 @@ void setup() {
   DebugPrintln(3, "");
 //*****************************************************************************************
 
-  
+
   //##### Pin Settings #####
   pinMode(ledPin, OUTPUT);          // LED Pin output
   pinMode(relayPin, OUTPUT);        // Relay Pin output
   pinMode(alarmPin, INPUT_PULLUP);  // Alarm Pin input
-  
+
   //##### Start 1Wire sensors #####
   sensors.begin();
 
@@ -357,7 +357,7 @@ void setup() {
     if (! bme.begin(address, &I2CBME)) {
       DebugPrintln(3,"Could not find a valid BME280 sensor, check wiring!");
       //actconf.envSensor = "BME280";
-      
+
       u8x8.drawString(0,6,"Could not find a");
       u8x8.drawString(0,7,"valid BME280!");
       u8x8.refreshDisplay();    // Only required for SSD1606/7
@@ -366,7 +366,7 @@ void setup() {
   }
   delay(3000);
   u8x8.clearDisplay();
-  
+
   //####### Starting LoRaWAN ######
   DebugPrintln(3,"Starting LoRaWAN");
   DebugPrint(3, "LoRa Frequency: ");
@@ -381,7 +381,6 @@ void setup() {
   DebugPrintln(3, actconf.dynsf);
   DebugPrintln(3, "");
 
-  
   #ifdef VCC_ENABLE
   // For Pinoccio Scout boards
   pinMode(VCC_ENABLE, OUTPUT);
@@ -464,7 +463,7 @@ void setup() {
 }
 
 void loop() {
-  // Send VE.direct data all 1s 
+  // Send VE.direct data all 1s
   if(millis() > starttime0 + 1000){
     static int count;
     starttime0 = millis();          // Read actual time
@@ -491,8 +490,8 @@ void loop() {
     Serial.write(data);
   }
 */
-  
-  // Read measuring data and display on OLED all 1s 
+
+  // Read measuring data and display on OLED all 1s
   if(millis() > starttime1 + 1000){
     starttime1 = millis();        // Read actual time
 
@@ -510,7 +509,7 @@ void loop() {
     int rawvoltage = 0;
     char rc;
     String receivedChars;
-    
+
     if (Serial1.available()) {
       rc = Serial1.read();
       receivedChars += String(rc);
@@ -544,7 +543,7 @@ void loop() {
 //        Serial.print("VE.direct SOC: ");
 //        Serial.println(vedirectSOC);
         receivedChars = "";
-      }     
+      }
       // Read actual temperature
       if (receivedChars == "T"){
         vedirectTemp = Serial1.parseInt() / 10.0;
@@ -561,28 +560,28 @@ void loop() {
 
   // HTTP Server-handler for HTTP update server
   httpServer.handleClient();
-   
+
   // TCP-Server for NMEA0183
   WiFiClient client = server.available();// Check if a client is connected
   int i = 0;
-    
+
   // While TCP client is connected or Serial Mode is active
   while ((client.connected() && !client.available()) || (int(actconf.serverMode) == 1)) {
-    
+
     httpServer.handleClient();      // HTTP Server-handler for HTTP update server
-    
+
     if ((i == 0) && ((int(actconf.serverMode) == 0) || (int(actconf.serverMode) == 4))) {
       DebugPrintln(3, "TCP client connected");
       DebugPrintln(3, "");
     }
 
-    // Read measuring data and display on OLED all 1s 
+    // Read measuring data and display on OLED all 1s
     if(millis() > starttime2 + 1000){
       starttime2 = millis();        // Read actual time
-  
+
       // BME280 measuerement
       bme.takeForcedMeasurement();  // has no effect in normal mode
-  
+
       readValues();
       writeDisplay();
     }
@@ -593,7 +592,7 @@ void loop() {
       DebugPrintln(3, "");
       DebugPrint(3, "Send package:");
       DebugPrintln(3, i);
-          
+
       if((int(actconf.serverMode) == 0) || (int(actconf.serverMode) == 1) || (int(actconf.serverMode) == 4)){
          if(int(actconf.senddata) == 1){
             if (String(actconf.envSensor) == "BME280") {
@@ -605,9 +604,9 @@ void loop() {
               client.println(sendRMC(1));   // Send GPS RMC telegram
             }
          }
-      }        
+      }
       flag1 = false;                        // Reset the send flag
-    }     
+    }
   }
 
 }

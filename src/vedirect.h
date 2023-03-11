@@ -96,7 +96,7 @@ void sendVEdirect(){
     checksum = (checksum + veOutput[i]) & 255;        // Modulo 256
   }
   checksum = 256 - checksum;
- 
+
   Serial1.print(vedirectOutput);                      // Wirite data
   Serial1.write(checksum);                            // Write checksum
   delay(100);
@@ -184,11 +184,11 @@ void sendBinaryValue(String type, int value){
 void sendVEdirectBinary(){
   Serial1.print(":5084404\n");                        // Ping with application version 4.08
   delay(15);
-  Serial1.print(":181A330\n");                        // Return answare for 
-  delay(15); 
+  Serial1.print(":181A330\n");                        // Return answare for
+  delay(15);
   Serial1.print(":5084404\n");                        // Ping with application version 4.08
   delay(15);
-  Serial1.print(":71001013C\n");                      
+  Serial1.print(":71001013C\n");
   delay(15);
   Serial1.print(":70A01004851313933325747475443000000000000000000000000005F\n"); // Serial number
   delay(15);
@@ -206,7 +206,7 @@ void sendVEdirectBinary(){
   delay(15);
   Serial1.print(":70EEC0153\n");
   delay(15);
-  Serial1.print(":70C01000041\n");                    // Description 
+  Serial1.print(":70C01000041\n");                    // Description
   delay(15);
   Serial1.print(":7B8EE000000A8\n");
   delay(15);
@@ -340,8 +340,8 @@ void sendVEdirectBinary(){
   delay(15);
   Serial1.print(":7FAEE00320034\n");
   delay(15);
-  
-  
+
+
   Serial1.print(":78FED000000D2\n");                  // Actual current (v, 0000)
   delay(15);
   Serial1.print(":78CED0000000000D5\n");              // Actual current 2 and 3
@@ -372,7 +372,7 @@ void sendVEdirectBinary(){
   Serial1.print(":71C03012E\n");
   delay(15);
 
-  
+
   Serial1.print(":7FFEE000000000061\n");
   delay(15);
   Serial1.print(":70003009FF8FFFFB6\n");
@@ -469,8 +469,7 @@ void sendVEdirectBinary(){
   delay(15);
   Serial1.print(":712EC014F\n");
   delay(15);
-  
-  
+
   delay(1500);
 }
 
