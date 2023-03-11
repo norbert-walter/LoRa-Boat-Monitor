@@ -31,8 +31,8 @@ typedef struct {
   u4_t devaddr = 0x26011097;                // LoRa device address
   u1_t nskey[16] = { 0xB6, 0xBC, 0x3B, 0x03, 0x7D, 0x4B, 0xBD, 0x9C, 0x08, 0x48, 0x71, 0x93, 0x37, 0xC1, 0x6E, 0x55 };  // LoRa Network session key
   u1_t appkey[16] = { 0x53, 0x1B, 0x2A, 0xEF, 0xA4, 0x70, 0xD5, 0xEC, 0x69, 0xF2, 0x09, 0x0A, 0x4E, 0xB5, 0xF3, 0x99 }; // LoRa Application Key
-  
-  
+
+
   char lorafrequency[6] = "EU868";          // LoRa frequency region [EU868|US915]
   int lchannel = 1;                         // Used LoRa channel [0...7|8|9] 0...7 single channel mode, 8 dynamic channel mode with channel 0...7, 9 dynamic channel mode with channel 0...2
   int spreadf = 10;                         // Spreading factor (SF) [7|8|9|10]
@@ -41,28 +41,28 @@ typedef struct {
   int sendlora = 1;                         // Send LoRa telegrams [0|1] 0=off 1=on
   int relay = 0;                            // Relay status [0|1] 0=off 1=on
                                             // Info: see relaytimer [0|1...255] 0=off 1...255= value x 5min on time for relay
-  
+
   int instrumentSize = 400;                 // Instrument size X * Y [pix] [200|250|300|350|400|450|500|550|600]
   int deviceID = 0;                         // ID of LoRa device [0...9]
   char deviceType[10] = "LoRa1000";         // Type of LoRa boat monitor [LoRa1000]
   int senddata = 1;                         // Send sensor data to NMEA0183 [0|1] 0=off 1=on (WIMWV, WIVWR, WIVPW, PWINF) for Serial or JSON
   int sendubidots = 0;                      // Send telegrams to Ubidots [0|1] 0=off 1=on
-  
+
   float voffset = 6.47301;                  // Voltage offset [V]
   float a1vslope = 0.02860676;              // Volatge calibration coefficient a1
   float a2vslope = 0;                       // Volatge calibration coefficient a2
   int vaverage = 1;                         // Volatge number of values for average building [1...100]
-  
+
   float t1offset = 0;                       // Tank1 offset [l]
   float a1t1slope = 143.1974;               // Tank1 calibration coefficient a1
   float a2t1slope = 0;                      // Tank1 calibration coefficient a2
   int t1average = 1;                        // Tank2 number of values for average building [1...100]
-  
+
   float t2offset = 0;                       // Tank2 offset [l]
   float a1t2slope = 143.1974;               // Tank2 calibration coefficient a1
   float a2t2slope = 0;                      // Tank2 calibration coefficient a2
   int t2average = 1;                        // Tank2 number of values for average building [1...100]
-  
+
   char tempSensorType[10] = "Off";          // Type of temperature sensor [Off|DS18B20]
   char tempUnit[2] = "C";                   // Unit of temperature [C|F]
 
