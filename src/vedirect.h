@@ -146,7 +146,7 @@ void sendBinaryValue(String type, int value){
   char cchecksum[] = "00";        // Checksum as char
   char hexbyte[] = "00";          // Hex byte
   char veOutput[200];             // Output char array without checksum
-  
+
   valueLow = lowByte(value);      // Separate low byte
   valueHigh = highByte(value);    // Separate hih byte
   sprintf(cvalue,"%02X%02X", valueLow, valueHigh); // Concat high and low byte
@@ -156,16 +156,16 @@ void sendBinaryValue(String type, int value){
   strLength = valueOut.length() +1;
   valueOut.toCharArray(veOutput, strLength);  // Convert output to char array
   // Calculate checksum
-  for(int i = 0; i < valueOut.length(); i = i +2) { // Calculate sum total over all Hex bytes   
+  for(int i = 0; i < valueOut.length(); i = i +2) { // Calculate sum total over all Hex bytes
     if(i > 0){                          // Ignore first char ":"
       hexbyte[0] = veOutput[i];         // Build the hex byte
     }
-    hexbyte[1] = veOutput[i+1]; 
+    hexbyte[1] = veOutput[i+1];
     checksum = (checksum + strtol(hexbyte, NULL, 16)) & 255; // Convert Hex to Bin and accumulate
   }
   checksum = 85 - checksum;   // 0x55 = 85 dez
   sprintf(cchecksum,"%02X", checksum); // Convert int value in hex value
-/*  
+/*
   // Debug information on Serial output
   Serial.print("VE.direct Value: ");
   Serial.print(valueOut);
