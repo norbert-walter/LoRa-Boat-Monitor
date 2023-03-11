@@ -51,6 +51,10 @@ Image: Block diagram LoRa boat monitor
 * Board can be ordered here:  [https://aisler.net/p/TUFQWBEF](https://aisler.net/p/TUFQWBEF)
 * Android app
 
+## Create your own code
+
+You have the option of creating your own code using the online [software development environment Gitpod](https://gitpod.io/#https://github.com/norbert-walter/LoRa-Boat-Monitor). Follow this link and a finished development environment similar to PlatformIO will be created that runs in your browser. To compile the software, enter bash run in the console. In the workspace you will find the compiled binary code under .pio/build/heltec_wifi_lora_32_V2/firmware.bin. With a right click you can download the binary file.
+
 ## Device flash process
 
 With the [Web Flash Tool](https://norbert-walter.github.io/LoRa-Boat-Monitor/) you can very easily flash the device with the firmware from the web browser. You need a Chrome or Edge browser and a USB connection cable. If the device is connected to the USB port of the computer, the serial connection can be selected and the flash process can then be started.
