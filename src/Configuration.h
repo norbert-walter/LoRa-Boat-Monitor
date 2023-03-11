@@ -4,7 +4,7 @@
 // Default configuration
 // Types 'byte' und 'word' doesn't work!
 typedef struct {
-  int valid = 7;                            // Number of configuration (Please change when the structure or values are changed)
+  int valid = 8;                            // Number of configuration (Please change when the structure or values are changed)
   int crypt = 0;                            // Activate for critical webside a password query [0 = off|1 = on]
   char password[31] = "12345678";           // Password for critical websides (settings, update and reboot)
   char devname[21] = "LoRa Boat Monitor";   // Device name for web configuration
