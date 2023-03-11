@@ -1,5 +1,7 @@
 ## LoRa Boat Monitor
 
+[Web Flash Tool](docs/index.html)
+
 ![LoRa Boat Monitor](Pictures/LoRa_Bootsmonitor.png)
 
 Image: LoRa Boat Monitor
