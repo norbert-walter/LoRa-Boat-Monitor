@@ -9,11 +9,11 @@ The LoRa boat monitor is used to monitor the boat when it is absent. Various mea
 There are a large number of [LoRa gateways](https://thethingsnetwork.org/map) which can receive the sent measurement data and forward it to the TTN server. Many LoRa gateways are run by private individuals on a non-profit basis. Anyone who wants can operate their own gateway and make it available to the general public. The radio technology uses the license-free frequency range around 868 MHz and uses a special transmission technology (chirp) to achieve large ranges of up to 50 km at low data rates. The ranges depend on the type of transmission, the antenna height and the environment. In built-up areas such as cities, typical ranges of 1… 4 km are possible. In open environments such as lakes and the sea, up to 50 km can be reached. There are no costs for data transmission when sending LoRa telegrams. This is the big difference to other long range transmission technologies like [SIGFOX](https://www.sigfox.com/) and mobile data networks such as 3G / 4G / 5G. If no LoRa gateway is within range, a simple 1-channel or 3-channel LoRa gateway can be set up with the same board. Only a few components are then left out and a different firmware used. Alternatively, the measured values can also be sent directly to Ubidots via WLAN, provided that a WLAN is within range.
 
 
-![LoRa Data Transmission](Pictures/LoRaWAN_Technology.jpg)
+![LoRa Data Transmission](project/pictures/LoRaWAN_Technology.jpg)
 
 Image: LoRa data transmission Semtech GmbH
 
-![LoRa Data Transmission](Pictures/LoRa_Blockschaltbild.png)
+![LoRa Data Transmission](project/pictures/LoRa_Blockschaltbild.png)
 
 Image: Block diagram LoRa boat monitor
 
@@ -133,6 +133,6 @@ For questions or suggestions please get in contact via email at norbert-walter(a
 
 If you like to help or consider this project useful, please donate. Thanks for your support!
 
-![Donate](Pictures/Donate.gif)
+![Donate](project/pictures/Donate.gif)
 
 [Donate with PayPal](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=5QZJZBM252F2L)
