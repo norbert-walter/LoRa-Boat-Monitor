@@ -1,6 +1,6 @@
 tasks:
 #  - command: pip3 install -U platformio && platformio run -e d1_mini
-- command: bash run
+- command: pip3 install -U platformio && platformio run &&
 
 image:
   file: .gitpod.Dockerfile
