@@ -9,7 +9,7 @@ String FWUpdate()
  content +=F( "<!DOCTYPE html>\r\n");
  content +=F( "<html>\r\n");
  content +=F( "<head>\r\n");
- content +=F( "<title>Error Windsensor</title>\r\n");
+ content +=F( "<title>Update Page</title>\r\n");
  content +=F( "<link rel='stylesheet' type='text/css' href='/css'>\r\n");
  content +=F( "<meta http-equiv='content-type' content='text/html; charset=UTF-8'>\r\n");
  content +=F( "<meta name=viewport content='width=device-width, initial-scale=1'>\r\n");
