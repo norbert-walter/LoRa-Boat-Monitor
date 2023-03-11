@@ -69,8 +69,8 @@ function decodeUplink(bytes) {
   decoded.humidity = ((bytes[7] << 8) | bytes[6]) / 100;
   var dewpoint = (((bytes[9] << 8) | bytes[8]) / 100) - 50;
   decoded.dewpoint = Math.round(dewpoint * 10) / 10;
-  var voltage = ((bytes[11] << 8) | bytes[10]) / 100 + voffset;
-  decoded.voltage = Math.round(voltage * 100) / 100;
+  var voltage = ((bytes[11] << 8) | bytes[10]) / 1000 + voffset;
+  decoded.voltage = Math.round(voltage * 1000) / 1000;
   var tempbattery = (((bytes[13] << 8) | bytes[12]) / 100) - 50;
   decoded.tempbattery = Math.round(tempbattery * 10) / 10;
   decoded.longitude = ((bytes[15] << 8) | bytes[14]) / 100 + ((bytes[17] << 8) | bytes[16]) / 1000000;
