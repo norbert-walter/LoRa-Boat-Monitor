@@ -1,5 +1,5 @@
 
-**20221119 firmware_V1.03.bmb `(actual)`**
+**20221119 firmware_V1.03.bmb `#00FF00 (actual)`**
 
 * Fixing hanging GPS data
 * Fixing hanging telegram counter
