@@ -1,6 +1,6 @@
 ## LoRa Boat Monitor
 
-https://github.com/norbert-walter/docs
+[Web Flash Tool](https://norbert-walter.github.io/LoRa-Boat-Monitor/)
 
 ![LoRa Boat Monitor](project/pictures/LoRa_Bootsmonitor.png)
 
