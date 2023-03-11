@@ -1,0 +1,20 @@
+#!/bin/bash
+
+# Install tools
+echo "Installing tools"
+pip3 install -U esptool
+pip3 install -platformio
+
+# Compile the firmware
+echo "Compiling Ffrmware"
+platformio run
+
+# Copy all bin files in docs for online flash tool
+echo "Copy bin files"
+cp ./.pio/build/heltec_wifi_lora_32_V2/bootloader.bin ./docs/bootloader.bin
+cp ./.pio/build/heltec_wifi_lora_32_V2/partitions.bin ./docs/partitions.bin
+cp ./.pio/build/heltec_wifi_lora_32_V2/firmware.bin ./docs/firmware.bin
+
+# Merge all bin files to one merge file
+echo "Merge all bin files"
+esptool.py --chip ESP32 merge_bin -o ./docs/merged-firmware.bin --flash_mode dio --flash_size 4MB 0x1000 ./docs/bootloader.bin 0x8000 ./docs/partitions.bin 0x10000 ./docs/firmware.bin
