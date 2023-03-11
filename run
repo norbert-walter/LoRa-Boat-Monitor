@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# This script compiles the software and loads the bin files into the web flashtool.
+# The web flashtool can be started from the Github website with: http://YourGitHubRepository/LoRa-Boat-Monitor/index.html
+
+# This cript runs only in the Gitpod Docker container.
+# Start the script with: bash run
+
 # Install tools
 echo "Installing tools"
 pip3 install -U esptool
@@ -9,7 +15,7 @@ pip3 install -platformio
 echo "Compiling Ffrmware"
 platformio run
 
-# Copy all bin files in docs for online flash tool
+# Copy all bin files in docs folder for online flash tool
 echo "Copy bin files"
 cp ./.pio/build/heltec_wifi_lora_32_V2/bootloader.bin ./docs/bootloader.bin
 cp ./.pio/build/heltec_wifi_lora_32_V2/partitions.bin ./docs/partitions.bin
