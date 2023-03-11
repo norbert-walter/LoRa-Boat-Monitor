@@ -1,6 +1,6 @@
 ## LoRa Boat Monitor
 
-[Web Flash Tool](docs/index.md)
+[Web Flash Tool](https://docs/index.html)
 
 ![LoRa Boat Monitor](Pictures/LoRa_Bootsmonitor.png)
 
