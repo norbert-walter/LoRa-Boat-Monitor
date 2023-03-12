@@ -1,1 +1,1 @@
-https://norbertwalter67.gitlab.io/docu-boat-monitor/firmware/firmware_V1.03.bmb
+https://norbert-walter.github.io/LoRa-Boat-Monitor/public/firmware/firmware_V1.05.bmb
