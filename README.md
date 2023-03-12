@@ -57,7 +57,7 @@ You have the option of creating your own code using the online [software develop
 
 ## Device flash process
 
-With the [Web Flash Tool](https://norbert-walter.github.io/LoRa-Boat-Monitor/) you can very easily flash the device with the firmware from the web browser. You need a Chrome or Edge browser and a USB connection cable. If the device is connected to the USB port of the computer, the serial connection can be selected and the flash process can then be started.
+With the [Web Flash Tool](https://norbert-walter.github.io/LoRa-Boat-Monitor/flash_tool/esp_flash_tool.html) you can very easily flash the device with the firmware from the web browser. You need a Chrome or Edge browser and a USB connection cable. If the device is connected to the USB port of the computer, the serial connection can be selected and the flash process can then be started.
 
 ## How can I use it?
 
