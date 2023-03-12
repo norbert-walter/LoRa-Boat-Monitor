@@ -1,5 +1,19 @@
+**20230312 firmware_V1.05.bmb `(actual)`**
 
-**20221119 firmware_V1.03.bmb `(actual)`**
+* Add boot screen
+* Add VE.Direct read and write
+* Support for Victron devices with VE.Direct port
+* Add NMEA0183 sentences for VE.Direct
+* Fix for wrong GPS informations
+* Cyclic updating of all information on the OLED display
+* Add separate task for LoRa functions
+* Stable Web sites
+* Project changed from GitLab to GitHub
+* WLAN default settings (SSID: NoWa, Pass: 12345678, IP: 192.168.4.1)
+
+`Attention! After update changes all settings to default values. Please renew the settings.`
+
+**20221119 firmware_V1.03.bmb `(old)`**
 
 * Fixing hanging GPS data
 * Fixing hanging telegram counter
