@@ -6,9 +6,9 @@
       {
         "chipFamily": "ESP32",
         "parts": [
-          { "path": "https://norbert-walter.github.io/LoRa-Boat-Monitor/bootloader.bin", "offset": 4096 },
-          { "path": "https://norbert-walter.github.io/LoRa-Boat-Monitor/partitions.bin", "offset": 32768 },
-          { "path": "https://norbert-walter.github.io/LoRa-Boat-Monitor/firmware.bin", "offset": 65536 }
+          { "path": "https://norbert-walter.github.io/LoRa-Boat-Monitor/flash_tool/bootloader.bin", "offset": 4096 },
+          { "path": "https://norbert-walter.github.io/LoRa-Boat-Monitor/flash_tool/partitions.bin", "offset": 32768 },
+          { "path": "https://norbert-walter.github.io/LoRa-Boat-Monitor/flash_tool/firmware.bin", "offset": 65536 }
         ]
       }
     ]
