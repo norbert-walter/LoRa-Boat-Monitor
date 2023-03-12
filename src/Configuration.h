@@ -12,8 +12,8 @@ typedef struct {
   char fversion[6] = "V1.05";               // Firmware version
   char license[12] = "GPL3";                // License type
   int debug = 3;                            // Debug mode 0=off 1=Errors 2=Errors + Warnings 3=Errors + Warnings + Messages
-  char cssid[31] = "Strubbel";              // SSID of WiFi Client
-  char cpassword[31] = "883428aa";          // Password of WiFi Client
+  char cssid[31] = "MyBoat";                // SSID of WiFi Client
+  char cpassword[31] = "S6587rr94P";        // Password of WiFi Client
   int timeout = 30;                         // Connection timeout for client in [s] [30|90|120|150|180|210|240|270|300]
   char sssid[31] = "NoWa";                  // SSID of WiFi Server
   char spassword[31] = "12345678";          // Password of WiFi Server
@@ -28,9 +28,9 @@ typedef struct {
   int skin = 0;                             // Skin for websides [0|1|2]
 
   // LoRaWAN device, network and session key
-  u4_t devaddr = 0x26011097;                // LoRa device address
-  u1_t nskey[16] = { 0xB6, 0xBC, 0x3B, 0x03, 0x7D, 0x4B, 0xBD, 0x9C, 0x08, 0x48, 0x71, 0x93, 0x37, 0xC1, 0x6E, 0x55 };  // LoRa Network session key
-  u1_t appkey[16] = { 0x53, 0x1B, 0x2A, 0xEF, 0xA4, 0x70, 0xD5, 0xEC, 0x69, 0xF2, 0x09, 0x0A, 0x4E, 0xB5, 0xF3, 0x99 }; // LoRa Application Key
+  u4_t devaddr = 0x12345678;                // LoRa device address
+  u1_t nskey[16] = { 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF, 0x00 };  // LoRa Network session key
+  u1_t appkey[16] = { 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF, 0x00 }; // LoRa Application Key
 
 
   char lorafrequency[6] = "EU868";          // LoRa frequency region [EU868|US915]
