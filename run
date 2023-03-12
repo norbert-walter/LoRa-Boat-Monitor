@@ -25,4 +25,4 @@ cp ./.pio/build/heltec_wifi_lora_32_V2/firmware.bin ./docs/flash_tool/firmware.b
 
 # Merge all bin files to one merge file
 echo "Merge all bin files"
-esptool.py --chip ESP32 merge_bin -o ./docs/flash_tool/merged-firmware.bin --flash_mode dio --flash_size 4MB 0x1000 ./docs/bootloader.bin 0x8000 ./docs/partitions.bin 0x10000 ./docs/firmware.bin
+esptool.py --chip ESP32 merge_bin -o ./docs/flash_tool/merged-firmware.bin --flash_mode dio --flash_size 4MB 0x1000 ./docs/flash_tool/bootloader.bin 0x8000 ./docs/flash_tool/partitions.bin 0x10000 ./docs/flash_tool/firmware.bin
