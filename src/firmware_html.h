@@ -139,7 +139,7 @@ String Firmware(int num, String vname[20], String value[20])
    content +=F( "};");
   
    content +=F( "function check_internet() {");
-   content +=F( "xmlhttp.open('GET', 'https://norbertwalter67.gitlab.io/docu-boat-monitor/firmware/ActualVersion.txt', true);");
+   content +=F( "xmlhttp.open('GET', 'https://norbert-walter.github.io/LoRa-Boat-Monitor/public/firmware/ActualVersion.txt', true);");
    content +=F( "xmlhttp.send();");
    content +=F( "};");
   
