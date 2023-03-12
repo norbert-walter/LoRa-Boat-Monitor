@@ -19,10 +19,10 @@ platformio run
 
 # Copy all bin files in docs folder for online flash tool
 echo "Copy bin files"
-cp ./.pio/build/heltec_wifi_lora_32_V2/bootloader.bin ./docs/flashtool/bootloader.bin
-cp ./.pio/build/heltec_wifi_lora_32_V2/partitions.bin ./docs/flashtool/partitions.bin
-cp ./.pio/build/heltec_wifi_lora_32_V2/firmware.bin ./docs/flashtool/firmware.bin
+cp ./.pio/build/heltec_wifi_lora_32_V2/bootloader.bin ./docs/flash_tool/bootloader.bin
+cp ./.pio/build/heltec_wifi_lora_32_V2/partitions.bin ./docs/flash_tool/partitions.bin
+cp ./.pio/build/heltec_wifi_lora_32_V2/firmware.bin ./docs/flash_tool/firmware.bin
 
 # Merge all bin files to one merge file
 echo "Merge all bin files"
-esptool.py --chip ESP32 merge_bin -o ./docs/flashtool/merged-firmware.bin --flash_mode dio --flash_size 4MB 0x1000 ./docs/bootloader.bin 0x8000 ./docs/partitions.bin 0x10000 ./docs/firmware.bin
+esptool.py --chip ESP32 merge_bin -o ./docs/flash_tool/merged-firmware.bin --flash_mode dio --flash_size 4MB 0x1000 ./docs/bootloader.bin 0x8000 ./docs/partitions.bin 0x10000 ./docs/firmware.bin
