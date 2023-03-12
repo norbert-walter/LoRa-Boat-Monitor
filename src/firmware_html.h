@@ -100,8 +100,8 @@ String Firmware(int num, String vname[20], String value[20])
    content +=F( "internet = 1;");
    // Read link to firmware and firmware version
    content +=F( "link = this.responseText;");
-   content +=F( "var firmware =  link.slice(61, 100);");
-   content +=F( "var version = link.slice(70, 75);");
+   content +=F( "var firmware =  link.slice(67, 100);");
+   content +=F( "var version = link.slice(76, 81);");
    content +=F( "document.upform1.firmware.value = firmware;");
    content +=F( "document.upform1.version.value = version;");
    // New firmware available
