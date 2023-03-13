@@ -9,7 +9,7 @@
 # Start the script with: bash run
 
 # Path definitions
-prgpath="./.pio/build/heltec_wifi_lora_32_V2"
+projectpath="./.pio/build/heltec_wifi_lora_32_V2"
 toolpath="./docs/flash_tool"
 
 # Install tools
@@ -23,9 +23,9 @@ platformio run
 
 # Copy all bin files in docs folder for online flash tool
 echo "Copy bin files"
-cp $prgpath/bootloader.bin $toolpath/bootloader.bin
-cp $prgpath/partitions.bin $toolpath/partitions.bin
-cp $prgpath/firmware.bin $toolpath/firmware.bin
+cp $projectpath/bootloader.bin $toolpath/bootloader.bin
+cp $projectpath/partitions.bin $toolpath/partitions.bin
+cp $projectpath/firmware.bin $toolpath/firmware.bin
 
 # Merge all bin files to one merge file
 echo "Merge all bin files"
