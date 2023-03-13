@@ -9,7 +9,7 @@
 # Start the script with: bash run
 
 # Path definitions
-prgpath="./.pio/build/heltec_wifi_lora_32_V2/"
+prgpath="./.pio/build/heltec_wifi_lora_32_V2"
 toolpath="./docs/flash_tool"
 
 # Install tools
