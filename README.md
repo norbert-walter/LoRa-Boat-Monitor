@@ -79,10 +79,10 @@ I have completed many tasks but still not everything is perfect so far.
     - [x] Ubitots configutarion and restrictions
 - [x] Mechanical design
     - [x] 3D parts für Onshape
-- [ ] Electronic design
+- [x] Electronic design
     - [x] Circuit design
     - [x] Board design
-    - [ ] Customer sample circuit
+    - [x] Customer sample circuit
 - [ ] Software
     - [x] Basic functionality for LoRa
     - [x] LoRa back channel for configuration
@@ -115,14 +115,14 @@ I have completed many tasks but still not everything is perfect so far.
     - [ ] DIY Kits
     - [x] Assembled LoRa boat monitor
 - [x] Shipping Zero Series
-- [ ] Documentation
+- [x] Documentation
     - [x] Documentation and update server on GitLab
-    - [ ] Technical description
-    - [ ] Construction manual
+    - [x] Technical description
+    - [x] Construction manual
     - [x] Part list
     - [x] User manual
-    - [ ] Data sheet
-    - [ ] Flash instructions
+    - [x] Data sheet
+    - [x] Flash instructions
 - [x] Application tests
     - [x] Temperature 20...40°C
     - [x] LoRa range test (SF7...SF12)
