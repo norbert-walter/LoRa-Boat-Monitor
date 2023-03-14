@@ -104,6 +104,7 @@ I have completed many tasks but still not everything is perfect so far.
     - [ ] MQTT
     - [x] Andoid App
     - [x] LoRa gateway firmware
+    - [x] Migration to TTS V3
 - [x] Components ordering
     - [x] Electronic board
     - [x] Mechanical parts
