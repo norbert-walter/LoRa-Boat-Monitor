@@ -4,6 +4,8 @@
 
 Image: LoRa Boat Monitor
 
+Project home page: https://open-boat-projects.org/en/lora-bootsmonitor/
+
 The LoRa boat monitor is used to monitor the boat when it is absent. Various measured values are continuously recorded at freely adjustable time intervals and transferred to the [LoRaWAN](https://www.lora-wan.de/) forwarded. The data is from the TTN server ([The Thinks Network](https://thethingsnetwork.org/)) received in Amsterdam and cached and then sent to [Ubidots](https://ubidots.com/) forwarded as a web frontend. The data transmission is secured by encryption up to Ubidots. The measured data is displayed in Ubidots and various notifications can be sent by email when measured values are exceeded.
 
 There are a large number of [LoRa gateways](https://thethingsnetwork.org/map) which can receive the sent measurement data and forward it to the TTN server. Many LoRa gateways are run by private individuals on a non-profit basis. Anyone who wants can operate their own gateway and make it available to the general public. The radio technology uses the license-free frequency range around 868 MHz and uses a special transmission technology (chirp) to achieve large ranges of up to 50 km at low data rates. The ranges depend on the type of transmission, the antenna height and the environment. In built-up areas such as cities, typical ranges of 1… 4 km are possible. In open environments such as lakes and the sea, up to 50 km can be reached. There are no costs for data transmission when sending LoRa telegrams. This is the big difference to other long range transmission technologies like [SIGFOX](https://www.sigfox.com/) and mobile data networks such as 3G / 4G / 5G. If no LoRa gateway is within range, a simple 1-channel or 3-channel LoRa gateway can be set up with the same board. Only a few components are then left out and a different firmware used. Alternatively, the measured values can also be sent directly to Ubidots via WLAN, provided that a WLAN is within range.
@@ -53,7 +55,7 @@ Image: Block diagram LoRa boat monitor
 
 ## Create your own code
 
-You have the option of creating your own code using the online [software development environment Gitpod](https://gitpod.io/#https://github.com/norbert-walter/LoRa-Boat-Monitor). Follow this link and a finished development environment similar to PlatformIO will be created that runs in your browser with all code components. To compile the software, enter ***bash run*** in the console. In the workspace you will find the compiled binary code under ***.pio/build/heltec_wifi_lora_32_V2/firmware.bin***. With a right click you can download the binary file.
+You have the option of creating your own code using the online [software development environment Gitpod](https://gitpod.io/#https://github.com/norbert-walter/LoRa-Boat-Monitor). Follow this link and a finished development environment similar to PlatformIO will be created that runs in your browser with all code components. To compile the software, enter ***bash run*** in the terminal. In the workspace you will find the compiled binary code under ***.pio/build/heltec_wifi_lora_32_V2/firmware.bin***. With a right click you can download the binary file.
 
 ## Device flash process
 
@@ -77,10 +79,10 @@ I have completed many tasks but still not everything is perfect so far.
     - [x] Ubitots configutarion and restrictions
 - [x] Mechanical design
     - [x] 3D parts für Onshape
-- [ ] Electronic design
+- [x] Electronic design
     - [x] Circuit design
     - [x] Board design
-    - [ ] Customer sample circuit
+    - [x] Customer sample circuit
 - [ ] Software
     - [x] Basic functionality for LoRa
     - [x] LoRa back channel for configuration
@@ -102,6 +104,7 @@ I have completed many tasks but still not everything is perfect so far.
     - [ ] MQTT
     - [x] Andoid App
     - [x] LoRa gateway firmware
+    - [x] Migration to TTS V3
 - [x] Components ordering
     - [x] Electronic board
     - [x] Mechanical parts
@@ -113,14 +116,14 @@ I have completed many tasks but still not everything is perfect so far.
     - [ ] DIY Kits
     - [x] Assembled LoRa boat monitor
 - [x] Shipping Zero Series
-- [ ] Documentation
+- [x] Documentation
     - [x] Documentation and update server on GitLab
-    - [ ] Technical description
-    - [ ] Construction manual
+    - [x] Technical description
+    - [x] Construction manual
     - [x] Part list
     - [x] User manual
-    - [ ] Data sheet
-    - [ ] Flash instructions
+    - [x] Data sheet
+    - [x] Flash instructions
 - [x] Application tests
     - [x] Temperature 20...40°C
     - [x] LoRa range test (SF7...SF12)
