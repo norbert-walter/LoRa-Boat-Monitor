@@ -107,7 +107,7 @@ String JS()
  content +=F( "xmlhttp.send();");
  content +=F( "}");
 
- content +=F( "setInterval(function(){read_json(); }, 1000);");
+ content +=F( "setInterval(function(){read_json(); }, 2000);");
 
  return content;
 }
