@@ -427,11 +427,11 @@ String Settings(int num, String vname[31], String value[31])
     content += F("if(iname == \"pagepasswd\"){valuestring = document.SetForm.sidepasswd.value;}");
     content += F("if(iname == \"cpasswd\"){valuestring = document.SetForm.cpasswd.value;}");
     content += F("if(iname == \"spasswd\"){valuestring = document.SetForm.spasswd.value;}");
-    content += F("var reguexp = /[^A-z0-9]/;");
+    content += F("var reguexp = /[^A-z0-9\-]/;");
     content += F("if(reguexp.exec(valuestring) || valuestring.length < 8 || valuestring.length > 20)");
     content += F("{");
     content += F("document.getElementById('sub').disabled = true;");    
-    content += F("alert('Error!\\nUse only a-z, A-Z, 0-9\\nPassword Length 8-20');");
+    content += F("alert('Error!\\nUse only a-z, A-Z, 0-9, '-'\\nPassword Length 8-20');");
     content += F("}");
     content += F("else{");
     content += F("document.getElementById('sub').disabled = false;");
