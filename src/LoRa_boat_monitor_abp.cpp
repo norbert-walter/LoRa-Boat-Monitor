@@ -340,7 +340,9 @@ void setup() {
   pinMode(alarmPin, INPUT_PULLUP);  // Alarm Pin input
 
   //##### Start 1Wire sensors #####
-  sensors.begin();
+  if (String(actconf.tempSensorType) == "DS18B20") {
+    sensors.begin();
+  }  
 
   //##### Cyclic timer #####
   Timer1.attach_ms(5000, readGPSValues);     // Start timer 1 all 5s cyclic GPS data reading
@@ -580,7 +582,9 @@ void loop() {
       starttime2 = millis();        // Read actual time
 
       // BME280 measuerement
-      bme.takeForcedMeasurement();  // has no effect in normal mode
+      if (String(actconf.envSensor) == "BME280") {
+        bme.takeForcedMeasurement();  // has no effect in normal mode
+      }  
 
       readValues();
       writeDisplay();
@@ -596,7 +600,7 @@ void loop() {
       if((int(actconf.serverMode) == 0) || (int(actconf.serverMode) == 1) || (int(actconf.serverMode) == 4)){
          if(int(actconf.senddata) == 1){
             if (String(actconf.envSensor) == "BME280") {
-              client.println(sendXDR1(1));    // Send XDR1 telegram environment sensors
+              client.println(sendXDR1(1));  // Send XDR1 telegram environment sensors
             }
             client.println(sendXDR2(1));    // Send XDR2 telegram battery sensors
             client.println(sendXDR3(1));    // Send XDR3 telegram level and control

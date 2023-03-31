@@ -1056,7 +1056,7 @@ void readValues() {
     DebugPrintln(3, "  ");
 
     // Read 1Wire sensor values for battery temperature
-    if (String(actconf.envSensor) != "VEdirect-Read") {
+    if (String(actconf.tempSensorType) == "DS18B20") {
       sensors.requestTemperatures();            // Send the command to get temperatures
       temp1wire = sensors.getTempCByIndex(0);   // Read 1Wire sensor 0
       // Error correction for wrong 1Wire values (-127)
@@ -1066,6 +1066,10 @@ void readValues() {
       else{
         temp1wireold = temp1wire;
       }
+    }
+    // If sensor disabled
+    else{
+      temp1wire = -99.9;
     }
     // Unit selection
     DebugPrint(3, "BattTemp = ");
