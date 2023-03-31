@@ -1,4 +1,9 @@
-**20230312 firmware_V1.05.bmb `(actual)`**
+**20230331 firmware_V1.06.bmb `(actual)`**
+
+* Fix for DS18B20
+* WLAN default settings (SSID: NoWa, Pass: 12345678, IP: 192.168.4.1)
+
+**20230312 firmware_V1.05.bmb `(old)`**
 
 * Add boot screen
 * Add VE.Direct read and write
