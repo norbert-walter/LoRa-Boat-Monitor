@@ -77,9 +77,9 @@ function decodeUplink(input) {
   };
 //  data.event = events[input.fPort];
 
-  var voffset = -0;     // Voltage offset
-  var toffset = -10.10; // Temperature offset for BME280
-  var poffset = 0       // pressure offset for altitude
+  var voffset = 0;      // Voltage offset
+  var toffset = 0;      // Temperature offset for BME280
+  var poffset = 0;      // Pressure offset for altitude
 
 //  data.counter = ((input.bytes[1] << 8) | input.bytes[0]);
   var temperature = (((input.bytes[3] << 8) | input.bytes[2]) / 100) - 50 + toffset;

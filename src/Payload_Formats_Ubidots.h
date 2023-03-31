@@ -59,9 +59,9 @@ function decodeUplink(bytes) {
   var decoded = {};
   
   // If received data is of Environment Monitoring type
-  var voffset = -1.1;  // Voltage offset
-  var toffset = -10.10;// Temperature offset for BME280
-  var poffset = 0      // pressure offset for altitude
+  var voffset = 0;      // Voltage offset
+  var toffset = 0;      // Temperature offset for BME280
+  var poffset = 0;      // pressure offset for altitude
 //  decoded.counter = ((bytes[1] << 8) | bytes[0]);
   var temperature = (((bytes[3] << 8) | bytes[2]) / 100) - 50 + toffset;
 //  decoded.temperature = Math.round(temperature * 10) / 10;
