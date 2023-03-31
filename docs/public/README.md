@@ -16,3 +16,5 @@ Online Documentation V1.01 [https://norbert-walter.github.io/LoRa-Boat-Monitor/p
 Online Documentation V1.03 [https://norbert-walter.github.io/LoRa-Boat-Monitor/public/index_V1.03.html](https://norbert-walter.github.io/LoRa-Boat-Monitor/public/index_V1.03.html)
 
 Online Documentation V1.05 [https://norbert-walter.github.io/LoRa-Boat-Monitor/public/index_V1.05.html](https://norbert-walter.github.io/LoRa-Boat-Monitor/public/index_V1.05.html)
+
+Online Documentation V1.06 [https://norbert-walter.github.io/LoRa-Boat-Monitor/public/index_V1.06.html](https://norbert-walter.github.io/LoRa-Boat-Monitor/public/index_V1.06.html)
