@@ -1,10 +1,10 @@
-/*******************************************************************************
- * Copyright (c) 2021 Norbert Walter
+ /*******************************************************************************
+ * Copyright (c) 2023 Norbert Walter modified by Guntmar Hoeche
  * 
  * License: GNU GPL V3
  * https://www.gnu.org/licenses/gpl-3.0.txt
  *
- * LoRa_boat_monitor_abp.ino
+ * LoRa_Boat_Monitor.cpp
  * 
  * Based on work of 2015 Thomas Telkamp and Matthijs Kooijman
  *
@@ -24,10 +24,12 @@
  *
  *******************************************************************************
  *
- * Attention! Check for EU868 the settings in:
- * .pio/libdeps/heltec_wifi_lora_32_V2/IBM LMIC framework/src/lmic/config.h
+ * Attention! Check for EU868 the build settings in plarformio.ini
+ *     -D ARDUINO_LMIC_PROJECT_CONFIG_H_SUPPRESS
+ *     -D CFG_eu868=1
+ *     -D CFG_sx1276_radio=1
  *
- * Set the #define CFG-eu868 1
+ * Set the #define CFG_eu868=1
  * 
  *******************************************************************************/
  
@@ -39,6 +41,7 @@
 #include <ESPmDNS.h>            // mDNS lib
 #include <Update.h>             // Web Update server
 #include <MD5Builder.h>         // MD5 lib
+#include "driver/adc.h"
 
 #include <U8x8lib.h>            // OLED Lib
 #include <lmic.h>               // LoRa Lib
@@ -52,6 +55,9 @@
 #include <WString.h>            // Needs for structures
 #include <OneWire.h>            // 1Wire lib
 #include <DallasTemperature.h>  // DS18B20 lib
+#include <StateMachine.h>
+
+#include "driver/rtc_io.h"
 
 #include "Configuration.h"      // Configuration
 
@@ -99,7 +105,363 @@ Ticker Timer1;                  // Declare Timer for GPS data reading
 Ticker Timer2;                  // Declare Timer for relay ontime
 Ticker Timer3;                  // Declare Timer for NMEA sending
 
+#define uS_TO_S_FACTOR 1000000  /* Conversion factor for micro seconds to seconds */
+#define TIME_TO_SLEEP  15        /* Time ESP32 will go to sleep (in seconds) */
+RTC_DATA_ATTR int bootCount = 0;
+RTC_DATA_ATTR uint loraCount = 0;
+
+const int STATE_DELAY = 1000;
+int randomState = 0;
+
+StateMachine machine = StateMachine();
+int loopcounter = 0;
+
+/*
+ *  States:
+ *  S0 = Setup
+ *  S1 = Collecting Data from sensors, and send via Lora, go into standby, wakeup every x Minutes, WiFi and Bluetooth and Webserver off.
+ *  S2 = Haushalt Batterie "On", Enable Wifi, no standby, local Webserver for deliver data to mobilephone. Maybe in long intervals also to a local server.
+ *  S3 = Motor Bat "On", Send data continous to a local server.
+ */
+
+void UBLOX_GPS_Wakeup()
+{
+  Serial2.println();                                   //send some characters to GPS to wake it up
+}
+
+void UBLOX_GPS_Shutdown()
+{
+  //sends command over serial interface to GPS to put it in PMREQ backup mode
+  uint8_t index;
+  uint8_t UBLOX_GPSStandby[] = {0xB5, 0x62, 0x02, 0x41, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x4D, 0x3B}; 
+
+  for (index = 0; index < sizeof(UBLOX_GPSStandby); index++)
+  {
+    Serial2.write(UBLOX_GPSStandby[index]);
+    Serial.print(UBLOX_GPSStandby[index], HEX);
+    Serial.print(" ");
+  }
+}
+
+void enableWiFi(){
+  adc_power_on();
+  WiFi.disconnect(false);  // Reconnect the network
+  WiFi.mode(WIFI_STA);    // Switch WiFi off
+ 
+  Serial.println("START WIFI");
+  WiFi.begin(actconf.cssid, actconf.cpassword);
+ 
+  int i = 0;
+  while ((WiFi.status() != WL_CONNECTED) && (i <= 20))
+  {
+    delay(500);
+    Serial.print(".");
+    i++;
+  }
+  if (i <= 20)
+  {
+    Serial.println("");
+    Serial.println("WiFi connected");
+    Serial.println("IP address: ");
+    Serial.println(WiFi.localIP());
+  }
+  else
+  {
+    Serial.println("");
+    Serial.println("WiFi not connected");
+  }
+}
+
+void state0(){
+  if(machine.executeOnce){
+    if (alarm1 == true) {
+      // disable gps
+      Timer1.detach();
+
+      u8x8.clearDisplay();
+      u8x8.setFont(u8x8_font_chroma48medium8_r);
+      u8x8.drawString(0,0,"State 0   ");
+      u8x8.drawString(0,1,"Batt switch off");
+      u8x8.drawString(0,2,"Lora mode");
+      u8x8.refreshDisplay();    // Only required for SSD1606/7
+
+      UBLOX_GPS_Shutdown();
+      rtc_gpio_pullup_en(GPIO_NUM_39);
+      esp_sleep_enable_ext0_wakeup(GPIO_NUM_39,0);
+    }
+  }
+
+  static unsigned long lastPrintTime = 0;
+  const bool timeCriticalJobs = os_queryTimeCriticalJobs(ms2osticksRound((TX_INTERVAL * 1000)));
+  if (!timeCriticalJobs && GOTO_DEEPSLEEP == true && !(LMIC.opmode & OP_TXRXPEND)) {
+    Serial.print(F("Can go sleep "));
+    LoraWANPrintLMICOpmode();
+    SaveLMICToRTC(TX_INTERVAL);
+    GoDeepSleep();
+  }
+  else if (lastPrintTime + 2000 < millis())
+  {
+    Serial.print(F("Cannot sleep "));
+    Serial.print(F("TimeCriticalJobs: "));
+    Serial.print(timeCriticalJobs);
+    Serial.print(" ");
+
+    LoraWANPrintLMICOpmode();
+    PrintRuntime();
+    lastPrintTime = millis();
+  }
+
+  u8x8.setFont(u8x8_font_chroma48medium8_r);
+  u8x8.drawString(0,0,"State 0   ");
+  u8x8.drawString(0,1,"in loop");
+  u8x8.refreshDisplay();    // Only required for SSD1606/7
+}
+
+void state1(){
+  //Serial.println("State 1");
+  DebugPrint(3, "State 1");
+  if(machine.executeOnce){
+    enableWiFi();
+    u8x8.setPowerSave(0);
+    u8x8.clearDisplay();
+    u8x8.setFont(u8x8_font_chroma48medium8_r);
+    u8x8.drawString(0,0,"State 1   ");
+    u8x8.drawString(0,1,"Batt switch on");
+    u8x8.drawString(0,2,"WiFI mode");
+    u8x8.refreshDisplay();    // Only required for SSD1606/7
+
+    UBLOX_GPS_Wakeup();                               //wakeup GPS 
+    Timer1.attach_ms(5000, readGPSValues);     // Start timer 1 all 5s cyclic GPS data reading
+
+    //*****************************************************************************************
+      // Starting access point for update server
+      DebugPrint(3, "Access point started with SSID: ");
+      DebugPrintln(3, actconf.sssid);
+      DebugPrint(3, "Access point channel: ");
+      DebugPrintln(3, WiFi.channel());
+    //  DebugPrintln(3, actconf.apchannel);
+      DebugPrint(3, "Max AP connections: ");
+      DebugPrintln(3, actconf.maxconnections);
+      WiFi.mode(WIFI_AP_STA);
+      WiFi.softAP(actconf.sssid, actconf.spassword, actconf.apchannel, false, actconf.maxconnections);
+      hname = String(actconf.hostname) + "-" + String(actconf.deviceID);
+      WiFi.hostname(hname);   // Provide the hostname
+      DebugPrint(3, "Host name: ");
+      DebugPrintln(3, hname);
+      if(actconf.mDNS == 1){
+        MDNS.begin(hname.c_str());                              // Start mDNS service
+        MDNS.addService("http", "tcp", actconf.httpport);       // HTTP service
+        MDNS.addService("nmea-0183", "tcp", actconf.dataport);  // NMEA0183 dada service for AVnav
+      }  
+      DebugPrintln(3, "mDNS service: activ");
+      DebugPrint(3, "mDNS name: ");
+      DebugPrint(3, hname);
+      DebugPrintln(3, ".local");
+
+      // Sart update server
+      httpServer.begin();
+      DebugPrint(3, "HTTP Update Server started at port: ");
+      DebugPrintln(3, actconf.httpport);
+      DebugPrint(3, "Use this URL: ");
+      DebugPrint(3, "http://");
+      DebugPrint(3, WiFi.softAPIP());
+      DebugPrintln(3, "/update");
+      DebugPrintln(3, "");
+
+      #include "ServerPages.h"    // Webserver pages request functions
+      
+      // Connect to WiFi network
+      DebugPrint(3, "Connecting WiFi client to ");
+      DebugPrintln(3, actconf.cssid);
+
+      // Load connection timeout from configuration (maxccount = (timeout[s] * 1000) / 500[ms])
+      maxccounter = (actconf.timeout * 1000) / 500;
+
+      // Wait until is connected otherwise abort connection after x connection trys
+      WiFi.begin(actconf.cssid, actconf.cpassword);
+      ccounter = 0;
+      while ((WiFi.status() != WL_CONNECTED) && (ccounter <= maxccounter)) {
+        delay(500);
+        DebugPrint(3, ".");
+        ccounter ++;
+      }
+      DebugPrintln(3, "");
+      if (WiFi.status() == WL_CONNECTED){
+        DebugPrint(3, "WiFi client connected with IP: ");
+        DebugPrintln(3, WiFi.localIP());
+        DebugPrintln(3, "");
+        delay(100);
+      }
+      else{
+        WiFi.disconnect(true);                // Abort connection
+        DebugPrintln(3, "Connection aborted");
+        DebugPrintln(3, "");
+      }
+      
+      // Start the NMEA TCP server
+      server.begin();
+      DebugPrint(3, "NMEA-Server started at port: ");
+      DebugPrintln(3, actconf.dataport);
+      // Print the IP address
+      DebugPrint(3, "Use this URL : ");
+      DebugPrint(3, "http://");
+      if (WiFi.status() == WL_CONNECTED){
+        DebugPrintln(3, WiFi.localIP());
+      }
+      else{
+        DebugPrintln(3, WiFi.softAPIP());
+      };
+      DebugPrintln(3, "");
+    //os_setTimedCallback(&sendjob, os_getTime()+sec2osticks(TX_INTERVAL), do_send);
+    // stop Lora
+    os_clearCallback(&sendjob);
+  }
+  loopcounter++;
+}
+
+bool transitionS0S1(){
+  if (alarm1 == false) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+bool transitionS1S0(){
+  //return true;
+  if (alarm1 == true) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+bool transitionS1S2(){
+  return true;
+}
+
+State* S0 = machine.addState(&state0); 
+State* S1 = machine.addState(&state1);
+
+/*
+Method to print the reason by which ESP32
+has been awaken from sleep
+*/
+void print_wakeup_reason(){
+  esp_sleep_wakeup_cause_t wakeup_reason;
+
+  wakeup_reason = esp_sleep_get_wakeup_cause();
+
+  switch(wakeup_reason)
+  {
+    case ESP_SLEEP_WAKEUP_EXT0 : Serial.println("Wakeup caused by external signal using RTC_IO"); break;
+    case ESP_SLEEP_WAKEUP_EXT1 : Serial.println("Wakeup caused by external signal using RTC_CNTL"); break;
+    case ESP_SLEEP_WAKEUP_TIMER : Serial.println("Wakeup caused by timer"); break;
+    case ESP_SLEEP_WAKEUP_TOUCHPAD : Serial.println("Wakeup caused by touchpad"); break;
+    case ESP_SLEEP_WAKEUP_ULP : Serial.println("Wakeup caused by ULP program"); break;
+    default : Serial.printf("Wakeup was not caused by deep sleep: %d\n",wakeup_reason); break;
+  }
+}
+
+
+void VEdirectSend()
+{
+// Send VE.direct data all 1s
+  if(millis() > starttime0 + 1000){
+    static int count;
+    starttime0 = millis();          // Read actual time
+    if (String(actconf.envSensor) == "VEdirect-Send") {
+      DebugPrintln(3, "VE.direct Output");
+      sendVEdirect();               // Send VE.direct text data
+      // ":78DED000B05C4\n"
+      int voltageOut = voltage * 100;
+      sendBinaryValue(":78DED00", voltageOut); // Send binary data
+      if(count == 0){
+        sendVEdirectBinary();       // VEdirect binary data (setup and data) al 10 times
+      }
+    }
+    count ++;
+    count = count % 10;
+  }
+
+/*
+  // Mirror all Ve.direct data to serial 0
+  int data;
+  while (Serial1.available()) {
+    //Show VE.direct Daten on serial port 0
+    data = Serial1.read();
+    Serial.write(data);
+  }
+*/
+}
+
+void VEdirectRead()
+{
+// Read VE.direct values (BMV-712 tested)
+  if (String(actconf.envSensor) == "VEdirect-Read") {
+    int rawvoltage = 0;
+    char rc;
+    String receivedChars;
+
+    if (Serial1.available()) {
+      rc = Serial1.read();
+      receivedChars += String(rc);
+      // Read actual voltage
+      if (receivedChars == "V"){
+        rawvoltage = Serial1.parseInt();
+        if(rawvoltage > 712){
+          vedirectVoltage = rawvoltage / 1000.0;
+//          Serial.print("VE.direct V: ");
+//          Serial.println(vedirectVoltage, 3);
+          receivedChars = "";
+        }
+      }
+      // Read actual current
+      if (receivedChars == "I"){
+        vedirectCurrent = Serial1.parseInt() / 1000.0;
+//        Serial.print("VE.direct I: ");
+//        Serial.println(vedirectCurrent);
+        receivedChars = "";
+      }
+      // Read actual power
+      if (receivedChars == "P"){
+        vedirectPower = Serial1.parseInt();
+//        Serial.print("VE.direct P: ");
+//        Serial.println(vedirectPower);
+        receivedChars = "";
+      }
+      // Read actual SOC
+      if (receivedChars == "S"){
+        vedirectSOC = Serial1.parseInt();
+//        Serial.print("VE.direct SOC: ");
+//        Serial.println(vedirectSOC);
+        receivedChars = "";
+      }
+      // Read actual temperature
+      if (receivedChars == "T"){
+        vedirectTemp = Serial1.parseInt() / 10.0;
+//        Serial.print("VE.direct T: ");
+//        Serial.println(vedirectTemp);
+        receivedChars = "";
+      }
+      // If line end then clear lina data
+      if (rc == '\n'){
+        receivedChars = "";
+      }
+    }
+  }
+}
+
+
 void setup() {
+  //##### Start OLED #####
+  u8x8.begin();
+  u8x8.setPowerSave(0);
+  u8x8.setFlipMode(1);    // ToDo: config via webinterface.
+
+  u8x8.setFont(u8x8_font_chroma48medium8_r);
+  u8x8.drawString(0,0,"Booting...");
+  u8x8.refreshDisplay();    // Only required for SSD1606/7  
 
   // Create task for LoRa code
   xTaskCreatePinnedToCore(
@@ -111,6 +473,8 @@ void setup() {
                     &Task1,     /* Task handle to keep track of created task */
                     0);         /* Pin task to core 0 */
   delay(500);
+
+  vTaskDelete(Task1);
 
   // Read the first byte from the EEPROM
   EEPROM.begin(sizeEEPROM);
@@ -151,16 +515,16 @@ void setup() {
   chipId = macAddressTrunc >> 40;
 
   //##### Start OLED #####
-  u8x8.begin();
-  u8x8.setPowerSave(0);
+  //u8x8.begin();
+  //u8x8.setPowerSave(0);
 
-  u8x8.setFont(u8x8_font_chroma48medium8_r);
+  /*u8x8.setFont(u8x8_font_chroma48medium8_r);
   u8x8.clearDisplay();
   u8x8.drawString(0,0,"NoWa(C)OBP");
   u8x8.drawString(11,0,actconf.fversion);
   u8x8.drawString(0,2,"Connection to:");
   u8x8.drawString(0,3,actconf.cssid);
-  u8x8.refreshDisplay();    // Only required for SSD1606/7
+  u8x8.refreshDisplay();*/    // Only required for SSD1606/7
 
   // ESP8266 Information Data
   DebugPrintln(3, "Booting Sketch...");
@@ -168,7 +532,7 @@ void setup() {
   DebugPrint(3, actconf.devname);
   DebugPrint(3, " ");
   DebugPrint(3, actconf.fversion);
-  DebugPrintln(3, " (C) Norbert Walter");
+  DebugPrintln(3, " (C) Norbert Walter and modified by Guntmar Hoeche");
   DebugPrintln(3, "******************************************");
   DebugPrintln(3, "");
   DebugPrintln(3, "Modul Type: Heltec LoRa-32");
@@ -364,6 +728,28 @@ void setup() {
       u8x8.drawString(0,7,"valid BME280!");
       u8x8.refreshDisplay();    // Only required for SSD1606/7
       delay(10000);
+
+      /*u8x8.setFont(u8x8_font_chroma48medium8_r);
+      u8x8.drawString(0,0,"NoWa(C)OBP");
+      u8x8.drawString(11,0,actconf.fversion);
+      u8x8.drawString(0,1,"Could not find a");
+      u8x8.drawString(0,2,"valid BME280!");
+      u8x8.drawString(0,4,"System stop");
+      u8x8.refreshDisplay();    // Only required for SSD1606/7  
+    } else {
+      DebugPrint(3, "BME280 found at address: ");
+      DebugPrintln(3, "0x"+String(address, HEX));
+      DebugPrintln(3, "");
+      
+      // For more details on the following scenarious, see chapter
+      // 3.5 "Recommended modes of operation" in the datasheet
+      bme.setSampling(Adafruit_BME280::MODE_FORCED,   // Mode [NORMAL|FORCED|SLEEP]
+                      Adafruit_BME280::SAMPLING_X2,   // Temperature [NONE|X2|X4|X8|X16]
+                      Adafruit_BME280::SAMPLING_X16,  // Pressure [NONE|X2|X4|X8|X16]
+                      Adafruit_BME280::SAMPLING_X1,   // Humidity [NONE|X2|X4|X8|X16]
+                      Adafruit_BME280::FILTER_OFF     // Filter [OFF|X1...X16]
+    //                  Adafruit_BME280::STANDBY_MS_0_5 ) //Only used in Normal Mode 0,5ms stand by time
+                      );*/
     }
   }
   delay(3000);
@@ -381,6 +767,12 @@ void setup() {
   DebugPrintln(3, actconf.spreadf);
   DebugPrint(3, "Dynamic SF: ");
   DebugPrintln(3, actconf.dynsf);
+  /*DebugPrint(3, "Device Adr: ");
+  DebugPrintln(3, actconf.devaddr);
+  DebugPrint(3, "nwkskey: ");
+  DebugPrintln(3, actconf.nskey);
+  DebugPrint(3, "appskey: ");
+  DebugPrintln(3, actconf.appkey);*/
   DebugPrintln(3, "");
 
   #ifdef VCC_ENABLE
@@ -460,111 +852,61 @@ void setup() {
   // (note: txpow seems to be ignored by the library)
   setSF(slot, actconf.spreadf, actconf.dynsf);
 
+  if (RTC_LMIC.seqnoUp != 0)
+  {
+    LoadLMICFromRTC();
+  }
+
+  LoraWANDebug(LMIC);
+
   // Start job
   do_send(&sendjob);
+
+  // sleep config...
+  //Increment boot number and print it every reboot
+  ++bootCount;
+  //Print the wakeup reason for ESP32
+  print_wakeup_reason();
+  /*
+  First we configure the wake up source
+  We set our ESP32 to wake up every 5 seconds
+  */
+  esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP * uS_TO_S_FACTOR);
+  //Serial.println("Setup ESP32 to sleep for every " + String(TIME_TO_SLEEP) + " Seconds");
+
+  S0->addTransition(&transitionS0S1,S1);    // Transition to itself (see transition logic for details)
+  S1->addTransition(&transitionS1S0,S0);  // S1 transition to S0
 }
 
 void loop() {
-  // Send VE.direct data all 1s
-  if(millis() > starttime0 + 1000){
-    static int count;
-    starttime0 = millis();          // Read actual time
-    if (String(actconf.envSensor) == "VEdirect-Send") {
-      DebugPrintln(3, "VE.direct Output");
-      sendVEdirect();               // Send VE.direct text data
-      // ":78DED000B05C4\n"
-      int voltageOut = voltage * 100;
-      sendBinaryValue(":78DED00", voltageOut); // Send binary data
-      if(count == 0){
-        sendVEdirectBinary();       // VEdirect binary data (setup and data) al 10 times
-      }
-    }
-    count ++;
-    count = count % 10;
-  }
+  // LoRa activities
+  os_runloop_once();
 
-/*
-  // Mirror all Ve.direct data to serial 0
-  int data;
-  while (Serial1.available()) {
-    //Show VE.direct Daten on serial port 0
-    data = Serial1.read();
-    Serial.write(data);
-  }
-*/
+	httpServer.handleClient();   // HTTP Server-handler for HTTP update server
+  readValues();
+  machine.run();
+  
+  //VEdirectSend();
 
   // Read measuring data and display on OLED all 1s
-  if(millis() > starttime1 + 1000){
+  /*if(millis() > starttime1 + 1000){
     starttime1 = millis();        // Read actual time
 
     // BME280 measuerement
     if (String(actconf.envSensor) == "BME280") {
       bme.takeForcedMeasurement(); // has no effect in normal mode
     }
-
     readValues();
     writeDisplay();
-  }
+  }*/
 
-  // Read VE.direct values (BMV-712 tested)
-  if (String(actconf.envSensor) == "VEdirect-Read") {
-    int rawvoltage = 0;
-    char rc;
-    String receivedChars;
-
-    if (Serial1.available()) {
-      rc = Serial1.read();
-      receivedChars += String(rc);
-      // Read actual voltage
-      if (receivedChars == "V"){
-        rawvoltage = Serial1.parseInt();
-        if(rawvoltage > 712){
-          vedirectVoltage = rawvoltage / 1000.0;
-//          Serial.print("VE.direct V: ");
-//          Serial.println(vedirectVoltage, 3);
-          receivedChars = "";
-        }
-      }
-      // Read actual current
-      if (receivedChars == "I"){
-        vedirectCurrent = Serial1.parseInt() / 1000.0;
-//        Serial.print("VE.direct I: ");
-//        Serial.println(vedirectCurrent);
-        receivedChars = "";
-      }
-      // Read actual power
-      if (receivedChars == "P"){
-        vedirectPower = Serial1.parseInt();
-//        Serial.print("VE.direct P: ");
-//        Serial.println(vedirectPower);
-        receivedChars = "";
-      }
-      // Read actual SOC
-      if (receivedChars == "S"){
-        vedirectSOC = Serial1.parseInt();
-//        Serial.print("VE.direct SOC: ");
-//        Serial.println(vedirectSOC);
-        receivedChars = "";
-      }
-      // Read actual temperature
-      if (receivedChars == "T"){
-        vedirectTemp = Serial1.parseInt() / 10.0;
-//        Serial.print("VE.direct T: ");
-//        Serial.println(vedirectTemp);
-        receivedChars = "";
-      }
-      // If line end then clear lina data
-      if (rc == '\n'){
-        receivedChars = "";
-      }
-    }
-  }
+  //VEdirectRead();
 
   // HTTP Server-handler for HTTP update server
-  httpServer.handleClient();
+  //httpServer.handleClient();
 
   // TCP-Server for NMEA0183
-  WiFiClient client = server.available();// Check if a client is connected
+  /*WiFiClient client = server.available();// Check if a client is connected
   int i = 0;
 
   // While TCP client is connected or Serial Mode is active
@@ -575,23 +917,22 @@ void loop() {
     if ((i == 0) && ((int(actconf.serverMode) == 0) || (int(actconf.serverMode) == 4))) {
       DebugPrintln(3, "TCP client connected");
       DebugPrintln(3, "");
-    }
+    }*/
 
     // Read measuring data and display on OLED all 1s
-    if(millis() > starttime2 + 1000){
+    /*if(millis() > starttime2 + 1000){
       starttime2 = millis();        // Read actual time
 
       // BME280 measuerement
       if (String(actconf.envSensor) == "BME280") {
         bme.takeForcedMeasurement();  // has no effect in normal mode
       }  
-
       readValues();
       writeDisplay();
-    }
+    }*/
 
     // Sending XDR data
-    if (flag1 == true){
+    /*if (flag1 == true){
       i++;
       DebugPrintln(3, "");
       DebugPrint(3, "Send package:");
@@ -611,6 +952,13 @@ void loop() {
       }
       flag1 = false;                        // Reset the send flag
     }
-  }
+  }*/
 
+}
+
+void disableWiFi(){
+    adc_power_off();
+    WiFi.disconnect(true);  // Disconnect from the network
+    WiFi.mode(WIFI_OFF);    // Switch WiFi off
+    Serial.println("STOP WIFI");
 }
