@@ -290,12 +290,17 @@ void state1(){
         DebugPrint(3, "WiFi client connected with IP: ");
         DebugPrintln(3, WiFi.localIP());
         DebugPrintln(3, "");
+        u8x8.drawString(0,4,"Connected IP:");
+        u8x8.drawString(0,5, WiFi.localIP().toString().c_str());
+        u8x8.refreshDisplay();    // Only required for SSD1606/7
         delay(100);
       }
       else{
         WiFi.disconnect(true);                // Abort connection
         DebugPrintln(3, "Connection aborted");
         DebugPrintln(3, "");
+        u8x8.drawString(0,3,"Conection aborted");
+        u8x8.refreshDisplay();    // Only required for SSD1606/7
       }
       
       // Start the NMEA TCP server
@@ -312,6 +317,8 @@ void state1(){
         DebugPrintln(3, WiFi.softAPIP());
       };
       DebugPrintln(3, "");
+    //*****************************************************************************************
+
     //os_setTimedCallback(&sendjob, os_getTime()+sec2osticks(TX_INTERVAL), do_send);
     // stop Lora
     os_clearCallback(&sendjob);
@@ -611,92 +618,6 @@ void setup() {
   DebugPrintln(3, actconf.dynsf);
   DebugPrintln(3, "");
 
-//*****************************************************************************************
-  // Starting access point for update server
-  DebugPrint(3, "Access point started with SSID: ");
-  DebugPrintln(3, actconf.sssid);
-  DebugPrint(3, "Access point channel: ");
-  DebugPrintln(3, WiFi.channel());
-//  DebugPrintln(3, actconf.apchannel);
-  DebugPrint(3, "Max AP connections: ");
-  DebugPrintln(3, actconf.maxconnections);
-  WiFi.mode(WIFI_AP_STA);
-  WiFi.softAP(actconf.sssid, actconf.spassword, actconf.apchannel, false, actconf.maxconnections);
-  hname = String(actconf.hostname) + "-" + String(actconf.deviceID);
-  WiFi.hostname(hname);   // Provide the hostname
-  DebugPrint(3, "Host name: ");
-  DebugPrintln(3, hname);
-  if(actconf.mDNS == 1){
-    MDNS.begin(hname.c_str());                              // Start mDNS service
-    MDNS.addService("http", "tcp", actconf.httpport);       // HTTP service
-    MDNS.addService("nmea-0183", "tcp", actconf.dataport);  // NMEA0183 dada service for AVnav
-  }
-  DebugPrintln(3, "mDNS service: activ");
-  DebugPrint(3, "mDNS name: ");
-  DebugPrint(3, hname);
-  DebugPrintln(3, ".local");
-
-  // Sart update server
-  httpServer.begin();
-  DebugPrint(3, "HTTP Update Server started at port: ");
-  DebugPrintln(3, actconf.httpport);
-  DebugPrint(3, "Use this URL: ");
-  DebugPrint(3, "http://");
-  DebugPrint(3, WiFi.softAPIP());
-  DebugPrintln(3, "/update");
-  DebugPrintln(3, "");
-
-  #include "ServerPages.h"    // Webserver pages request functions
-
-  // Connect to WiFi network
-  DebugPrint(3, "Connecting WiFi client to ");
-  DebugPrintln(3, actconf.cssid);
-
-  // Load connection timeout from configuration (maxccount = (timeout[s] * 1000) / 500[ms])
-  maxccounter = (actconf.timeout * 1000) / 500;
-
-  // Wait until is connected otherwise abort connection after x connection trys
-  WiFi.begin(actconf.cssid, actconf.cpassword);
-  ccounter = 0;
-  while ((WiFi.status() != WL_CONNECTED) && (ccounter <= maxccounter)) {
-    delay(500);
-    DebugPrint(3, ".");
-    ccounter ++;
-  }
-  DebugPrintln(3, "");
-  if (WiFi.status() == WL_CONNECTED){
-    DebugPrint(3, "WiFi client connected with IP: ");
-    DebugPrintln(3, WiFi.localIP());
-    DebugPrintln(3, "");
-    u8x8.drawString(0,4,"Connected IP:");
-    u8x8.drawString(0,5, WiFi.localIP().toString().c_str());
-    u8x8.refreshDisplay();    // Only required for SSD1606/7
-    delay(100);
-  }
-  else{
-    WiFi.disconnect(true);                // Abort connection
-    DebugPrintln(3, "Connection aborted");
-    DebugPrintln(3, "");
-    u8x8.drawString(0,3,"Conection aborted");
-    u8x8.refreshDisplay();    // Only required for SSD1606/7
-  }
-
-  // Start the NMEA TCP server
-  server.begin();
-  DebugPrint(3, "NMEA-Server started at port: ");
-  DebugPrintln(3, actconf.dataport);
-  // Print the IP address
-  DebugPrint(3, "Use this URL : ");
-  DebugPrint(3, "http://");
-  if (WiFi.status() == WL_CONNECTED){
-    DebugPrintln(3, WiFi.localIP());
-  }
-  else{
-    DebugPrintln(3, WiFi.softAPIP());
-  };
-  DebugPrintln(3, "");
-//*****************************************************************************************
-
 
   //##### Pin Settings #####
   pinMode(ledPin, OUTPUT);          // LED Pin output
@@ -752,7 +673,7 @@ void setup() {
                       );*/
     }
   }
-  delay(3000);
+  //delay(3000);
   u8x8.clearDisplay();
 
   //####### Starting LoRaWAN ######
