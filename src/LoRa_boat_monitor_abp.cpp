@@ -144,9 +144,9 @@ void UBLOX_GPS_Shutdown()
 }
 
 void enableWiFi(){
-  adc_power_on();
+  //adc_power_on();
   WiFi.disconnect(false);  // Reconnect the network
-  WiFi.mode(WIFI_STA);    // Switch WiFi off
+  /*WiFi.mode(WIFI_STA);    // Switch WiFi off
  
   Serial.println("START WIFI");
   WiFi.begin(actconf.cssid, actconf.cpassword);
@@ -169,71 +169,9 @@ void enableWiFi(){
   {
     Serial.println("");
     Serial.println("WiFi not connected");
-  }
-}
+  }*/
 
-void state0(){
-  if(machine.executeOnce){
-    if (alarm1 == true) {
-      // disable gps
-      Timer1.detach();
-
-      u8x8.clearDisplay();
-      u8x8.setFont(u8x8_font_chroma48medium8_r);
-      u8x8.drawString(0,0,"State 0   ");
-      u8x8.drawString(0,1,"Batt switch off");
-      u8x8.drawString(0,2,"Lora mode");
-      u8x8.refreshDisplay();    // Only required for SSD1606/7
-
-      UBLOX_GPS_Shutdown();
-      rtc_gpio_pullup_en(GPIO_NUM_39);
-      esp_sleep_enable_ext0_wakeup(GPIO_NUM_39,0);
-    }
-  }
-
-  static unsigned long lastPrintTime = 0;
-  const bool timeCriticalJobs = os_queryTimeCriticalJobs(ms2osticksRound((TX_INTERVAL * 1000)));
-  if (!timeCriticalJobs && GOTO_DEEPSLEEP == true && !(LMIC.opmode & OP_TXRXPEND)) {
-    Serial.print(F("Can go sleep "));
-    LoraWANPrintLMICOpmode();
-    SaveLMICToRTC(TX_INTERVAL);
-    GoDeepSleep();
-  }
-  else if (lastPrintTime + 2000 < millis())
-  {
-    Serial.print(F("Cannot sleep "));
-    Serial.print(F("TimeCriticalJobs: "));
-    Serial.print(timeCriticalJobs);
-    Serial.print(" ");
-
-    LoraWANPrintLMICOpmode();
-    PrintRuntime();
-    lastPrintTime = millis();
-  }
-
-  u8x8.setFont(u8x8_font_chroma48medium8_r);
-  u8x8.drawString(0,0,"State 0   ");
-  u8x8.drawString(0,1,"in loop");
-  u8x8.refreshDisplay();    // Only required for SSD1606/7
-}
-
-void state1(){
-  //Serial.println("State 1");
-  DebugPrint(3, "State 1");
-  if(machine.executeOnce){
-    enableWiFi();
-    u8x8.setPowerSave(0);
-    u8x8.clearDisplay();
-    u8x8.setFont(u8x8_font_chroma48medium8_r);
-    u8x8.drawString(0,0,"State 1   ");
-    u8x8.drawString(0,1,"Batt switch on");
-    u8x8.drawString(0,2,"WiFI mode");
-    u8x8.refreshDisplay();    // Only required for SSD1606/7
-
-    UBLOX_GPS_Wakeup();                               //wakeup GPS 
-    Timer1.attach_ms(5000, readGPSValues);     // Start timer 1 all 5s cyclic GPS data reading
-
-    //*****************************************************************************************
+  //*****************************************************************************************
       // Starting access point for update server
       DebugPrint(3, "Access point started with SSID: ");
       DebugPrintln(3, actconf.sssid);
@@ -318,6 +256,68 @@ void state1(){
       };
       DebugPrintln(3, "");
     //*****************************************************************************************
+}
+
+void state0(){
+  if(machine.executeOnce){
+    if (alarm1 == true) {
+      // disable gps
+      Timer1.detach();
+
+      u8x8.clearDisplay();
+      u8x8.setFont(u8x8_font_chroma48medium8_r);
+      u8x8.drawString(0,0,"State 0   ");
+      u8x8.drawString(0,1,"Batt switch off");
+      u8x8.drawString(0,2,"Lora mode");
+      u8x8.refreshDisplay();    // Only required for SSD1606/7
+
+      UBLOX_GPS_Shutdown();
+      rtc_gpio_pullup_en(GPIO_NUM_39);
+      esp_sleep_enable_ext0_wakeup(GPIO_NUM_39,0);
+    }
+  }
+
+  static unsigned long lastPrintTime = 0;
+  const bool timeCriticalJobs = os_queryTimeCriticalJobs(ms2osticksRound((TX_INTERVAL * 1000)));
+  if (!timeCriticalJobs && GOTO_DEEPSLEEP == true && !(LMIC.opmode & OP_TXRXPEND)) {
+    Serial.print(F("Can go sleep "));
+    LoraWANPrintLMICOpmode();
+    SaveLMICToRTC(TX_INTERVAL);
+    GoDeepSleep();
+  }
+  else if (lastPrintTime + 2000 < millis())
+  {
+    Serial.print(F("Cannot sleep "));
+    Serial.print(F("TimeCriticalJobs: "));
+    Serial.print(timeCriticalJobs);
+    Serial.print(" ");
+
+    LoraWANPrintLMICOpmode();
+    PrintRuntime();
+    lastPrintTime = millis();
+  }
+
+  //u8x8.setFont(u8x8_font_chroma48medium8_r);
+  //u8x8.drawString(0,0,"State 0   ");
+  //u8x8.drawString(0,1,"in loop");
+  //u8x8.refreshDisplay();    // Only required for SSD1606/7
+}
+
+void state1(){
+  DebugPrintln(3, "state1");
+  if(machine.executeOnce){
+    DebugPrintln(3, "state1 once");
+    enableWiFi();
+    u8x8.setPowerSave(0);
+    u8x8.clearDisplay();
+    u8x8.setFont(u8x8_font_chroma48medium8_r);
+    u8x8.drawString(0,0,"State 1   ");
+    u8x8.drawString(0,1,"Batt switch on");
+    u8x8.drawString(0,2,"WiFI mode");
+    u8x8.refreshDisplay();    // Only required for SSD1606/7
+
+    UBLOX_GPS_Wakeup();                               //wakeup GPS 
+    Timer1.attach_ms(5000, readGPSValues);     // Start timer 1 all 5s cyclic GPS data reading
 
     //os_setTimedCallback(&sendjob, os_getTime()+sec2osticks(TX_INTERVAL), do_send);
     // stop Lora
@@ -875,11 +875,4 @@ void loop() {
     }
   }*/
 
-}
-
-void disableWiFi(){
-    adc_power_off();
-    WiFi.disconnect(true);  // Disconnect from the network
-    WiFi.mode(WIFI_OFF);    // Switch WiFi off
-    Serial.println("STOP WIFI");
 }

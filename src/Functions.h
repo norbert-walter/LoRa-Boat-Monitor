@@ -891,6 +891,13 @@ void setSF(int tslot, int spreadingfactor, int dynamicsf){
 
 // Read and print sensor values
 void readValues() {
+    boolean debugBME280 = false;
+    boolean debugVEdirect = false;
+    boolean debugADC = false;
+    boolean debugAlarm1 = false;
+    boolean debugRelay = false;
+    boolean debugEnvSensor = false;
+    boolean debugTemp1wire = false;
     // Is connected with extern WLAN network
     if(WiFi.localIP().toString() != "0.0.0.0"){
       fieldstrength = float(WiFi.RSSI());
@@ -912,59 +919,85 @@ void readValues() {
     
     // Read BME280 sensor values
     if (String(actconf.envSensor) == "BME280") {
-      DebugPrint(3, "Temperature = ");
+      if (debugBME280) {
+        DebugPrint(3, "Temperature = ");
+      }
       if(String(actconf.tempUnit) == "C"){
         temperature = bme.readTemperature();
-        DebugPrint(3, temperature);
-        DebugPrintln(3, " *C");
+        if (debugBME280) {
+          DebugPrint(3, temperature);
+          DebugPrintln(3, " *C");
+        }
       }
       else{
         temperature = bme.readTemperature() * 9 / 5 + 32;
-        DebugPrint(3, temperature);
-        DebugPrintln(3, " *F");
+        if (debugBME280) {
+          DebugPrint(3, temperature);
+          DebugPrintln(3, " *F");
+        }
       }
   
-      DebugPrint(3, "Pressure = ");
+      if (debugBME280) {
+        DebugPrint(3, "Pressure = ");
+      }
       pressure = bme.readPressure() / 100.0F;
-      DebugPrint(3, pressure);
-      DebugPrintln(3, " hPa");
+      if (debugBME280) {
+        DebugPrint(3, pressure);
+        DebugPrintln(3, " hPa");
+      }
   
-      DebugPrint(3, "Approx. Altitude = ");
+      if (debugBME280) {
+        DebugPrint(3, "Approx. Altitude = ");
+      }
       altitude = bme.readAltitude(SEALEVELPRESSURE_HPA);
-      DebugPrint(3, altitude);
-      DebugPrintln(3, " m");
+      if (debugBME280) {
+        DebugPrint(3, altitude);
+        DebugPrintln(3, " m");
+      }
   
-      DebugPrint(3, "Humidity = ");
+      if (debugBME280) {
+        DebugPrint(3, "Humidity = ");
+      }
       humidity = bme.readHumidity();
-      DebugPrint(3, humidity);
-      DebugPrintln(3, " %");
+      if (debugBME280) {
+        DebugPrint(3, humidity);
+        DebugPrintln(3, " %");
+      }
   
-      DebugPrint(3, "Dewpoint = ");
+      if (debugBME280) {
+        DebugPrint(3, "Dewpoint = ");
+      }
       dewp = dewpoint(temperature, humidity);
       // temperature is chnanged in the correct unit!
       if(String(actconf.tempUnit) == "C"){
-        DebugPrint(3, dewp);
-        DebugPrintln(3, " *C");
+        if (debugBME280) {
+          DebugPrint(3, dewp);
+          DebugPrintln(3, " *C");
+        }
       }
       else{
-        DebugPrint(3, dewp);
-        DebugPrintln(3, " *F");
+        if (debugBME280) {
+          DebugPrint(3, dewp);
+          DebugPrintln(3, " *F");
+        }
       }
     }
 
     // Show and copy BMV-712 battery monitor values
     if (String(actconf.envSensor) == "VEdirect-Read") {
-      DebugPrint(3, "VE.direct Voltage = ");
-      DebugPrint(3, vedirectVoltage);
-      DebugPrintln(3, " V");
+      if (debugVEdirect) {
+        DebugPrint(3, "VE.direct Voltage = ");
+        DebugPrint(3, vedirectVoltage);
+        DebugPrintln(3, " V");
 
-      DebugPrint(3, "VE.direct Current = ");
-      DebugPrint(3, vedirectCurrent);
-      DebugPrintln(3, " A");
+        DebugPrint(3, "VE.direct Current = ");
+        DebugPrint(3, vedirectCurrent);
+        DebugPrintln(3, " A");
 
-      DebugPrint(3, "VE.direct Temperature = ");
-      DebugPrint(3, vedirectTemp);
-      DebugPrintln(3, " *C");
+        DebugPrint(3, "VE.direct Temperature = ");
+        DebugPrint(3, vedirectTemp);
+        DebugPrintln(3, " *C");
+      }
 
       //Copy voltage and temperature in in original values
       voltage = vedirectVoltage;
@@ -978,14 +1011,20 @@ void readValues() {
     
     // Analog input 0...3.3V => 0...33V => 0...4096
     if (String(actconf.envSensor) != "VEdirect-Read") {
-      DebugPrint(3, "Voltage = ");
+      if (debugVEdirect) {
+        DebugPrint(3, "Voltage = ");
+      }
       voltage = actconf.a2vslope * actconf.a2vslope * analogRead(ANALOG_IN) + actconf.a1vslope * analogRead(ANALOG_IN) + actconf.voffset;
-      DebugPrint(3, analogRead(ANALOG_IN));
-      DebugPrintln(3, " dig");
+      if (debugVEdirect) {
+        DebugPrint(3, analogRead(ANALOG_IN));
+        DebugPrintln(3, " dig");
+      }
     }
-    DebugPrint(3, "Voltage = ");
-    DebugPrint(3, voltage);
-    DebugPrintln(3, " V");
+    if (debugVEdirect) {
+      DebugPrint(3, "Voltage = ");
+      DebugPrint(3, voltage);
+      DebugPrintln(3, " V");
+    }
     // Battery Capacity 100% = 12,70V, 0% = 10,50V Pb-Accu
     capacity = (voltage * 100 / 2.2) - 477.27;
     if(capacity < 0){
@@ -994,15 +1033,21 @@ void readValues() {
     if(capacity > 100){
       capacity = 100;
     }
-    DebugPrint(3, "Capacity = ");
-    DebugPrint(3, capacity);
-    DebugPrintln(3, " %");
+    if (debugVEdirect) {
+      DebugPrint(3, "Capacity = ");
+      DebugPrint(3, capacity);
+      DebugPrintln(3, " %");
+    }
 
-    DebugPrint(3, "Tank1 = ");
+    if (debugADC) {
+      DebugPrint(3, "Tank1 = ");
+    }
     // Analog input 0...3.3V => 0...33V => 0...4096
     tank1 = 3.3 / 4096 * analogRead(TANK1_IN);
-    DebugPrint(3, tank1);
-    DebugPrint(3, " V ");
+    if (debugADC) {
+      DebugPrint(3, tank1);
+      DebugPrint(3, " V ");
+    }
     if(tank1 < 1){
       tank1p = (tank1 * actconf.a2t1slope * actconf.a2t1slope) + (tank1 * actconf.a1t1slope) + actconf.t1offset;
     }
@@ -1016,14 +1061,20 @@ void readValues() {
     if(tank1p < 0){
       tank1p = 0;
     }
-    DebugPrint(3, tank1p);
-    DebugPrintln(3, " %");
+    if (debugADC) {
+      DebugPrint(3, tank1p);
+      DebugPrintln(3, " %");
+    }
 
-    DebugPrint(3, "Tank2 = ");
+    if (debugADC) {
+      DebugPrint(3, "Tank2 = ");
+    }
     // Analog input 0...3.3V => 0...33V => 0...4096
     tank2 = 3.3 / 4096 * analogRead(TANK2_IN);
-    DebugPrint(3, tank2);
-    DebugPrint(3, " V ");
+    if (debugADC) {
+      DebugPrint(3, tank2);
+      DebugPrint(3, " V ");
+    }
      if(tank2 < 1){
       tank2p = (tank2 * actconf.a2t2slope * actconf.a2t2slope) + (tank2 * actconf.a1t2slope) + actconf.t2offset;
     }
@@ -1037,23 +1088,33 @@ void readValues() {
     if(tank2p < 0){
       tank2p = 0;
     }
-    DebugPrint(3, tank2p);
-    DebugPrintln(3, " %");
+    if (debugADC) {
+      DebugPrint(3, tank2p);
+      DebugPrintln(3, " %");
+    }
 
-    DebugPrint(3, "Alarm = ");
+    if (debugAlarm1) {
+      DebugPrint(3, "Alarm = ");
+    }
     // Digital input 12V activ via opto coupler
     alarm1 = digitalRead(alarmPin);
-    DebugPrint(3, alarm1);
-    DebugPrintln(3, "  ");
+    if (debugAlarm1) {
+      DebugPrint(3, alarm1);
+      DebugPrintln(3, "  ");
+    }
 
-    DebugPrint(3, "Relay = ");
-    // Digital relay output high activ 
-    DebugPrint(3, actconf.relay);
-    DebugPrintln(3, "  ");
+    if (debugRelay) {
+      DebugPrint(3, "Relay = ");
+      // Digital relay output high activ 
+      DebugPrint(3, actconf.relay);
+      DebugPrintln(3, "  ");
+    }
 
-    DebugPrint(3, "envSensor = ");
-    DebugPrint(3, String(actconf.envSensor));
-    DebugPrintln(3, "  ");
+    if (debugEnvSensor) {
+      DebugPrint(3, "envSensor = ");
+      DebugPrint(3, String(actconf.envSensor));
+      DebugPrintln(3, "  ");
+    }
 
     // Read 1Wire sensor values for battery temperature
     if (String(actconf.tempSensorType) == "DS18B20") {
@@ -1072,17 +1133,23 @@ void readValues() {
       temp1wire = -99.9;
     }
     // Unit selection
-    DebugPrint(3, "BattTemp = ");
+    if (debugTemp1wire) {
+      DebugPrint(3, "BattTemp = ");
+    }
     if(String(actconf.tempUnit) == "C"){
-      DebugPrint(3, temp1wire);
-      DebugPrintln(3, " *C");
+      if (debugTemp1wire) {
+        DebugPrint(3, temp1wire);
+        DebugPrintln(3, " *C");
+      }
     }
     else{
       temp1wire = temp1wire * 9 / 5 + 32;
-      DebugPrint(3, temp1wire);
-      DebugPrintln(3, " *F");
+      if (debugTemp1wire) {
+        DebugPrint(3, temp1wire);
+        DebugPrintln(3, " *F");
+      }
     }
-    DebugPrintln(3, "");
+    //DebugPrintln(3, "");
 }
 
 // Display sensor values on OLED
@@ -1156,7 +1223,10 @@ void writeDisplay() {
 
 // Timer 1 interrupt Read and print GPS values
 void readGPSValues() {
-  DebugPrintln(3, "Timer1");
+  boolean debugGPS = false;
+  if (debugGPS) {
+    DebugPrintln(3, "Timer1");
+  }
   rmc_finish = false;
   // Special hack to restart the hanging serial 2 port
   while(!Serial2.available()){
@@ -1183,62 +1253,102 @@ void readGPSValues() {
     if(start==1) {nmea_all.concat((char)inByte);} // Concat character
     if((inByte==13) && (start==1)) { // Detect end of NMEA0183 telegram (CR)
       start=0;
-      DebugPrintln(3, nmea_all); // Print all NMEA0183 telegrams
+      if (debugGPS) {
+        DebugPrintln(3, nmea_all); // Print all NMEA0183 telegrams
+      }
       if (nmea_all.substring(3,6) == "RMC") {
         nmea = nmea_all;            // Take over RMC telegram
-        DebugPrint(3, "Commata: ");
-        DebugPrintln(3, c_counter); // Print commata counter for RMC
+        if (debugGPS) {
+          DebugPrint(3, "Commata: ");
+          DebugPrintln(3, c_counter); // Print commata counter for RMC
+        }
         // If NMEA cecksum ok
         if(CheckNMEA(nmea) && c_counter == 12) {
-          DebugPrintln(3, "RMC message processed"); // Only print RMC telegram
-          DebugPrint(3, "Sta ");
+          if (debugGPS) {
+            DebugPrintln(3, "RMC message processed"); // Only print RMC telegram
+            DebugPrint(3, "Sta ");
+          }
           gpsStatus = getRMC_status(nmea);
-          DebugPrintln(3, gpsStatus);
-          DebugPrint(3, "Lat ");
+          if (debugGPS) {
+            DebugPrintln(3, gpsStatus);
+            DebugPrint(3, "Lat ");
+          }
           latitude = getRMC_LatDec(nmea);
-          DebugPrint(3, String(latitude, 6));
+          if (debugGPS) {
+            DebugPrint(3, String(latitude, 6));
+          }
           latitudeNS = getRMC_LatNS(nmea);
-          DebugPrintln(3, String(latitudeNS));         
-          DebugPrint(3, "Lon ");         
+          if (debugGPS) {
+            DebugPrintln(3, String(latitudeNS));         
+            DebugPrint(3, "Lon ");
+          }
           longitude = getRMC_LonDec(nmea);
-          DebugPrint(3, String(longitude, 6));
+          if (debugGPS) {
+            DebugPrint(3, String(longitude, 6));
+          }
           longitudeEW = getRMC_LonEW(nmea);
-          DebugPrintln(3, String(longitudeEW));
-          DebugPrintln(3, "");
+          if (debugGPS) {
+            DebugPrintln(3, String(longitudeEW));
+            DebugPrintln(3, "");
+          }
 
-          DebugPrint(3, "Time ");
+          if (debugGPS) {
+            DebugPrint(3, "Time ");
+          }
           hour = getRMC_hour(nmea);
-          DebugPrint(3, String(hour));
-          DebugPrint(3, ":");
+          if (debugGPS) {
+            DebugPrint(3, String(hour));
+            DebugPrint(3, ":");
+          }
           minute = getRMC_min(nmea);
-          DebugPrint(3, String(minute));
-          DebugPrint(3, ":");
+          if (debugGPS) {
+            DebugPrint(3, String(minute));
+            DebugPrint(3, ":");
+          }
           second = getRMC_sec(nmea);
-          DebugPrintln(3, String(second));
-          DebugPrintln(3, "");
+          if (debugGPS) {
+            DebugPrintln(3, String(second));
+            DebugPrintln(3, "");
+          }
 
-          DebugPrint(3, "Date ");
+          if (debugGPS) {
+            DebugPrint(3, "Date ");
+          }
           day = getRMC_Day(nmea);
-          DebugPrint(3, String(day));
-          DebugPrint(3, ".");
+          if (debugGPS) {
+            DebugPrint(3, String(day));
+            DebugPrint(3, ".");
+          }
           month = getRMC_Month(nmea);
-          DebugPrint(3, String(month));
-          DebugPrint(3, ".");
+          if (debugGPS) {
+            DebugPrint(3, String(month));
+            DebugPrint(3, ".");
+          }
           year = getRMC_Year(nmea);
-          DebugPrintln(3, String(year));
-          DebugPrintln(3, "");
+          if (debugGPS) {
+            DebugPrintln(3, String(year));
+            DebugPrintln(3, "");
+          }
 
-          DebugPrint(3, "Speed ");
+          if (debugGPS) {
+            DebugPrint(3, "Speed ");
+          }
           gpsspeed = getRMC_Speed(nmea);
-          DebugPrintln(3, String(gpsspeed));
-          DebugPrint(3, "Course ");
+          if (debugGPS) {
+            DebugPrintln(3, String(gpsspeed));
+            DebugPrint(3, "Course ");
+          }
           course = getRMC_Course(nmea);
-          DebugPrintln(3, String(course));
-          DebugPrintln(3, "");
+          if (debugGPS) {
+            DebugPrintln(3, String(course));
+            DebugPrintln(3, "");
+          }
 
-          DebugPrint(3, "Env Sensor ");
-          DebugPrintln(3, String(actconf.envSensor));
-          DebugPrintln(3, "");
+          if (debugGPS) {
+            DebugPrint(3, "Env Sensor ");
+            DebugPrintln(3, String(actconf.envSensor));
+            DebugPrintln(3, "");
+          }
 
           rmc_finish = true;
         }
