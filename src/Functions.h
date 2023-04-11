@@ -1157,7 +1157,8 @@ void writeDisplay() {
   
   // Formating display data
   char cnt[10];
-  dtostrf(int(counter16), 5, 0, cnt);
+  //dtostrf(int(counter16), 5, 0, cnt);
+  dtostrf(int(LMIC.seqnoUp), 5, 0, cnt);
   char tmp[10];      
   dtostrf(temperature, 5, 1, tmp);
   char pres[10];

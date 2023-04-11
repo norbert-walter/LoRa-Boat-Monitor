@@ -105,7 +105,8 @@ String JSON()
     content += String(slot);
     content +=F( ",");
     content +=F( "\"TXCounter\": ");
-    content += String(counter16 - 1);
+    //content += String(counter16 - 1);
+    content += String(LMIC.seqnoUp - 1);
     content +=F( ",");    
     content +=F( "\"Relay\": \"");
     content += String(actconf.relay);

@@ -25,6 +25,7 @@ void PrintRuntime()
 
 void do_send(osjob_t *j)
 {
+  boolean debugValues = true;
   // LoRa sending activ
   lora_activ = true;
 
@@ -53,13 +54,16 @@ void do_send(osjob_t *j)
     readValues();
 
     // int -> bytes
-    byte counterLow = lowByte(counter16);
-    byte counterHigh = highByte(counter16);
+    //byte counterLow = lowByte(counter16);
+    //byte counterHigh = highByte(counter16);
+    byte counterLow = lowByte(LMIC.seqnoUp);
+    byte counterHigh = highByte(LMIC.seqnoUp);
     // place the bytes into the payload
     mydata[0] = counterLow;
     mydata[1] = counterHigh;
     DebugPrint(3, F("Packet: "));
-    DebugPrintln(3, counter16);
+    //DebugPrintln(3, counter16);
+    DebugPrintln(3, LMIC.seqnoUp);
 
     // float -> int 48.234 -> 4823
     temperature16 = float2int(temperature + 50);
@@ -69,8 +73,10 @@ void do_send(osjob_t *j)
     // place the bytes into the payload
     mydata[2] = tempLow;
     mydata[3] = tempHigh;
-    DebugPrint(3, F("Temp: "));
-    DebugPrintln(3, temperature16);
+    if (debugValues) {
+      DebugPrint(3, F("Temp: "));
+      DebugPrintln(3, temperature16);
+    }
 
     // float -> int 48.234 -> 4823
     pressure16 = float2int(pressure / 10);
@@ -79,8 +85,10 @@ void do_send(osjob_t *j)
     // place the bytes into the payload
     mydata[4] = pressLow;
     mydata[5] = pressHigh;
-    DebugPrint(3, F("Pressure: "));
-    DebugPrintln(3, pressure16);
+    if (debugValues) {
+      DebugPrint(3, F("Pressure: "));
+      DebugPrintln(3, pressure16);
+    }
 
     // float -> int 48.234 -> 4823
     humidity16 = float2int(humidity);
@@ -89,8 +97,10 @@ void do_send(osjob_t *j)
     // place the bytes into the payload
     mydata[6] = humLow;
     mydata[7] = humHigh;
-    DebugPrint(3, F("Humidity: "));
-    DebugPrintln(3, humidity16);
+    if (debugValues) {
+      DebugPrint(3, F("Humidity: "));
+      DebugPrintln(3, humidity16);
+    }
 
     // float -> int 48.234 -> 4823
     dewp16 = float2int(dewp + 50);
@@ -99,8 +109,10 @@ void do_send(osjob_t *j)
     // place the bytes into the payload
     mydata[8] = dewpLow;
     mydata[9] = dewpHigh;
-    DebugPrint(3, F("Dewpoint: "));
-    DebugPrintln(3, dewp16);
+    if (debugValues) {
+      DebugPrint(3, F("Dewpoint: "));
+      DebugPrintln(3, dewp16);
+    }
 
     // float -> int 48.2345 -> 48234
     voltage16 = float3int(voltage);
@@ -109,8 +121,10 @@ void do_send(osjob_t *j)
     // place the bytes into the payload
     mydata[10] = voltageLow;
     mydata[11] = voltageHigh;
-    DebugPrint(3, F("Voltage: "));
-    DebugPrintln(3, voltage16);
+    if (debugValues) {
+      DebugPrint(3, F("Voltage: "));
+      DebugPrintln(3, voltage16);
+    }
 
     // float -> int 48.234 -> 4823
     temp1wire16 = float2int(temp1wire + 50);
@@ -120,8 +134,10 @@ void do_send(osjob_t *j)
     // place the bytes into the payload
     mydata[12] = temp2Low;
     mydata[13] = temp2High;
-    DebugPrint(3, F("Temp1W: "));
-    DebugPrintln(3, temp1wire16);
+    if (debugValues) {
+      DebugPrint(3, F("Temp1W: "));
+      DebugPrintln(3, temp1wire16);
+    }
 
     // float 48.234567 -> int 4823.4567 -> 4823 4567
     float predot = int(longitude * 100);
@@ -137,10 +153,12 @@ void do_send(osjob_t *j)
     mydata[15] = lon1High;
     mydata[16] = lon2Low;
     mydata[17] = lon2High;
-    DebugPrint(3, F("Lon1: "));
-    DebugPrintln(3, longitude16_1);
-    DebugPrint(3, F("Lon2: "));
-    DebugPrintln(3, longitude16_2);
+    if (debugValues) {
+      DebugPrint(3, F("Lon1: "));
+      DebugPrintln(3, longitude16_1);
+      DebugPrint(3, F("Lon2: "));
+      DebugPrintln(3, longitude16_2);
+    }
 
     // float 48.234567 -> int 4823.4567 -> 4823 4567
     float predot2 = int(latitude * 100);
@@ -156,10 +174,12 @@ void do_send(osjob_t *j)
     mydata[19] = lat1High;
     mydata[20] = lat2Low;
     mydata[21] = lat2High;
-    DebugPrint(3, F("Lat1: "));
-    DebugPrintln(3, latitude16_1);
-    DebugPrint(3, F("Lat2: "));
-    DebugPrintln(3, latitude16_2);
+    if (debugValues) {
+      DebugPrint(3, F("Lat1: "));
+      DebugPrintln(3, latitude16_1);
+      DebugPrint(3, F("Lat2: "));
+      DebugPrintln(3, latitude16_2);
+    }
 
     // float -> int 48.234 -> 4823
     tank1_16 = float2int(tank1p);
@@ -168,8 +188,10 @@ void do_send(osjob_t *j)
     // place the bytes into the payload
     mydata[22] = tank1Low;
     mydata[23] = tank1High;
-    DebugPrint(3, F("Level1: "));
-    DebugPrintln(3, tank1_16);
+    if (debugValues) {
+      DebugPrint(3, F("Level1: "));
+      DebugPrintln(3, tank1_16);
+    }
 
     // float -> int 48.234 -> 4823
     tank2_16 = float2int(tank2p);
@@ -178,31 +200,39 @@ void do_send(osjob_t *j)
     // place the bytes into the payload
     mydata[24] = tank2Low;
     mydata[25] = tank2High;
-    DebugPrint(3, F("Level2: "));
-    DebugPrintln(3, tank2_16);
+    if (debugValues) {
+      DebugPrint(3, F("Level2: "));
+      DebugPrintln(3, tank2_16);
+    }
 
     // int -> byte
     int alarmrelay = (actconf.relay * 16) + alarm1;
     byte alarmrelayLow = lowByte(alarmrelay);
     // place the bytes into the payload
     mydata[26] = alarmrelayLow;
-    DebugPrint(3, F("Alarm: "));
-    DebugPrintln(3, alarm1);
+    if (debugValues) {
+      DebugPrint(3, F("Alarm: "));
+      DebugPrintln(3, alarm1);
+    }
 
     // Relay
-    DebugPrint(3, F("Relay: "));
-    DebugPrintln(3, actconf.relay);
+    if (debugValues) {
+      DebugPrint(3, F("Relay: "));
+      DebugPrintln(3, actconf.relay);
+    }
 
     String payload = "";
     //        sprintf(payload,"%x",mydata);
-    DebugPrint(3, F("Payload: "));
-    DebugPrintln(3, payload);
+    if (debugValues) {
+      DebugPrint(3, F("Payload: "));
+      DebugPrintln(3, payload);
+    }
 
     //        flashLED(100);  // Flash white LED on LoRa board
     LMIC_setTxData2(1, mydata, sizeof(mydata) - 1, 0);
     DebugPrintln(3, F("Packet queued"));
 
-    counter16++;
+    //counter16++;
   }
   // Next TX is scheduled after TX_COMPLETE event.
 
@@ -382,6 +412,9 @@ void onEvent(ev_t ev)
     break;
   case EV_LINK_ALIVE:
     DebugPrintln(3, F("EV_LINK_ALIVE"));
+    break;
+  case EV_TXSTART:
+    DebugPrintln(3, F("EV_TXSTART"));
     break;
   default:
     DebugPrintln(3, F("Unknown event: "));

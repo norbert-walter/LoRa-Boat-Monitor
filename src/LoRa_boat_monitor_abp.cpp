@@ -116,12 +116,12 @@ int randomState = 0;
 StateMachine machine = StateMachine();
 int loopcounter = 0;
 
+bool toggleDisplayStatus = false;
+
 /*
  *  States:
- *  S0 = Setup
- *  S1 = Collecting Data from sensors, and send via Lora, go into standby, wakeup every x Minutes, WiFi and Bluetooth and Webserver off.
- *  S2 = Haushalt Batterie "On", Enable Wifi, no standby, local Webserver for deliver data to mobilephone. Maybe in long intervals also to a local server.
- *  S3 = Motor Bat "On", Send data continous to a local server.
+ *  S0 = Standby (WiFi off, Lora send every x minutes)
+ *  S1 = Battery On (Wifi on)
  */
 
 void UBLOX_GPS_Wakeup()
@@ -137,10 +137,11 @@ void UBLOX_GPS_Shutdown()
 
   for (index = 0; index < sizeof(UBLOX_GPSStandby); index++)
   {
+    //Serial2.write(UBLOX_GPSStandby[index]);
     Serial2.write(UBLOX_GPSStandby[index]);
-    Serial.print(UBLOX_GPSStandby[index], HEX);
-    Serial.print(" ");
+    //Serial.print(UBLOX_GPSStandby[index], HEX);
   }
+  Serial.println("Shutdown GPS...");
 }
 
 void enableWiFi(){
@@ -271,7 +272,7 @@ void state0(){
       u8x8.drawString(0,2,"Lora mode");
       u8x8.refreshDisplay();    // Only required for SSD1606/7
 
-      UBLOX_GPS_Shutdown();
+      //UBLOX_GPS_Shutdown();
       rtc_gpio_pullup_en(GPIO_NUM_39);
       esp_sleep_enable_ext0_wakeup(GPIO_NUM_39,0);
     }
@@ -283,6 +284,7 @@ void state0(){
     Serial.print(F("Can go sleep "));
     LoraWANPrintLMICOpmode();
     SaveLMICToRTC(TX_INTERVAL);
+    delay(500);
     GoDeepSleep();
   }
   else if (lastPrintTime + 2000 < millis())
@@ -290,11 +292,27 @@ void state0(){
     Serial.print(F("Cannot sleep "));
     Serial.print(F("TimeCriticalJobs: "));
     Serial.print(timeCriticalJobs);
-    Serial.print(" ");
+    Serial.print(", ");
+
+    if (toggleDisplayStatus) {
+      u8x8.drawString(0,4,".");
+      toggleDisplayStatus = false;
+    } else {
+      u8x8.drawString(0,4," ");
+      toggleDisplayStatus = true;
+    }
 
     LoraWANPrintLMICOpmode();
     PrintRuntime();
     lastPrintTime = millis();
+    delay(500);
+    long seconds = millis() / 1000;
+    if (seconds >= 50) {
+      Serial.println(F("seconds >= 50"));
+      SaveLMICToRTC(TX_INTERVAL);
+      delay(500);
+      GoDeepSleep();
+    }
   }
 
   //u8x8.setFont(u8x8_font_chroma48medium8_r);
@@ -304,9 +322,10 @@ void state0(){
 }
 
 void state1(){
-  DebugPrintln(3, "state1");
+  //DebugPrintln(3, "state1");
   if(machine.executeOnce){
     DebugPrintln(3, "state1 once");
+
     enableWiFi();
     u8x8.setPowerSave(0);
     u8x8.clearDisplay();
@@ -316,13 +335,44 @@ void state1(){
     u8x8.drawString(0,2,"WiFI mode");
     u8x8.refreshDisplay();    // Only required for SSD1606/7
 
-    UBLOX_GPS_Wakeup();                               //wakeup GPS 
-    Timer1.attach_ms(5000, readGPSValues);     // Start timer 1 all 5s cyclic GPS data reading
+    //UBLOX_GPS_Wakeup();                               //wakeup GPS 
 
     //os_setTimedCallback(&sendjob, os_getTime()+sec2osticks(TX_INTERVAL), do_send);
     // stop Lora
-    os_clearCallback(&sendjob);
+    //os_clearCallback(&sendjob);
   }
+  httpServer.handleClient();   // HTTP Server-handler for HTTP update server
+  
+  static unsigned long lastPrintTime = 0;
+  const bool timeCriticalJobs = os_queryTimeCriticalJobs(ms2osticksRound((TX_INTERVAL * 1000)));
+  if (!timeCriticalJobs && GOTO_DEEPSLEEP == true && !(LMIC.opmode & OP_TXRXPEND)) {
+    //Serial.print(F("Can go sleep "));
+    //LoraWANPrintLMICOpmode();
+    //SaveLMICToRTC(TX_INTERVAL);
+    //GoDeepSleep();
+    //delay(5000);
+    GOTO_DEEPSLEEP = false;
+  }
+  else if (lastPrintTime + 2000 < millis())
+  {
+    Serial.print(F("Cannot sleep "));
+    Serial.print(F("TimeCriticalJobs: "));
+    Serial.print(timeCriticalJobs);
+    Serial.print(", ");
+
+    LoraWANPrintLMICOpmode();
+    PrintRuntime();
+    lastPrintTime = millis();
+    delay(500);
+    long seconds = millis() / 1000;
+    if (seconds >= 50) {
+      Serial.println(F("seconds >= 50"));
+      //SaveLMICToRTC(TX_INTERVAL);
+      delay(500);
+      //GoDeepSleep();
+    }
+  }
+
   loopcounter++;
 }
 
@@ -471,17 +521,17 @@ void setup() {
   u8x8.refreshDisplay();    // Only required for SSD1606/7  
 
   // Create task for LoRa code
-  xTaskCreatePinnedToCore(
-                    Task1code,  /* Task function */
-                    "Task1",    /* Name of task */
-                    10000,      /* Stack size of task */
-                    NULL,       /* Parameter of the task */
-                    1,          /* Priority of the task */
-                    &Task1,     /* Task handle to keep track of created task */
-                    0);         /* Pin task to core 0 */
-  delay(500);
+  //xTaskCreatePinnedToCore(
+  //                  Task1code,  /* Task function */
+  //                  "Task1",    /* Name of task */
+  //                  10000,      /* Stack size of task */
+  //                  NULL,       /* Parameter of the task */
+  //                  1,          /* Priority of the task */
+  //                  &Task1,     /* Task handle to keep track of created task */
+  //                  0);         /* Pin task to core 0 */
+  //delay(500);
 
-  vTaskDelete(Task1);
+  //vTaskDelete(Task1);
 
   // Read the first byte from the EEPROM
   EEPROM.begin(sizeEEPROM);
@@ -674,7 +724,7 @@ void setup() {
     }
   }
   //delay(3000);
-  u8x8.clearDisplay();
+  //u8x8.clearDisplay();
 
   //####### Starting LoRaWAN ######
   DebugPrintln(3,"Starting LoRaWAN");
@@ -803,8 +853,9 @@ void loop() {
   // LoRa activities
   os_runloop_once();
 
-	httpServer.handleClient();   // HTTP Server-handler for HTTP update server
+	//httpServer.handleClient();   // HTTP Server-handler for HTTP update server
   readValues();
+  //delay(1000);
   machine.run();
   
   //VEdirectSend();
