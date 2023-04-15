@@ -25,7 +25,8 @@ void PrintRuntime()
 
 void do_send(osjob_t *j)
 {
-  boolean debugValues = true;
+  boolean debug = false;
+  boolean debugValues = false;
   // LoRa sending activ
   lora_activ = true;
 
@@ -40,9 +41,11 @@ void do_send(osjob_t *j)
 
     // Slot calculation
     slot = slotcounter % 12;
-    DebugPrint(3, "Slot = ");
-    DebugPrint(3, slot);
-    DebugPrintln(3, "");
+    if (debug) {
+      DebugPrint(3, "Slot = ");
+      DebugPrint(3, slot);
+      DebugPrintln(3, "");
+    }
 
     // Set different spreading factor for time slots
     setSF(slot, actconf.spreadf, actconf.dynsf);
@@ -61,9 +64,11 @@ void do_send(osjob_t *j)
     // place the bytes into the payload
     mydata[0] = counterLow;
     mydata[1] = counterHigh;
-    DebugPrint(3, F("Packet: "));
-    //DebugPrintln(3, counter16);
-    DebugPrintln(3, LMIC.seqnoUp);
+    if (debug) {
+      DebugPrint(3, F("Packet: "));
+      //DebugPrintln(3, counter16);
+      DebugPrintln(3, LMIC.seqnoUp);
+    }
 
     // float -> int 48.234 -> 4823
     temperature16 = float2int(temperature + 50);

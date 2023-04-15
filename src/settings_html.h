@@ -171,6 +171,12 @@ String Settings(int num, String vname[31], String value[31])
     if (vname[i] == "envSensor") {
       value[i].toCharArray(actconf.envSensor, 20);
     }
+    if (vname[i] == "standbyMode") {
+      value[i].toCharArray(actconf.standbyMode, 4);
+    }
+    if (vname[i] == "loraStandbyMode") {
+      value[i].toCharArray(actconf.loraStandbyMode, 8);
+    }
     // Calibration Settings
     //*********************    
     if (vname[i] == "a1vslope") {
@@ -360,6 +366,12 @@ String Settings(int num, String vname[31], String value[31])
     content += F(";");
     content += F("document.SetForm.envSensor.selectedIndex = ");
     content += getindex(envSensor, String(actconf.envSensor));
+    content += F(";");
+    content += F("document.SetForm.standbyMode.selectedIndex = ");
+    content += getindex(standbyMode, String(actconf.standbyMode));
+    content += F(";");
+    content += F("document.SetForm.loraStandbyMode.selectedIndex = ");
+    content += getindex(loraStandbyMode, String(actconf.loraStandbyMode));
     content += F(";");
     content += F("}");
 
@@ -922,7 +934,35 @@ String Settings(int num, String vname[31], String value[31])
     content += F("</td>");
     content += F("<td></td>");
     content += F("</tr>");
+
+    content += F("<tr>");
+    content += F("<td><h3>Standby Mode Settings</h3></td>");
+    content += F("<td></td>");
+    content += F("<td></td>");
+    content += F("</tr>");
+
+    content += F("<tr>");
+    content += F("<td>Activate Standby Mode (Alarm Input X1-3)</td>");
+    content += F("<td>");
+    content += F("<select name='standbyMode' size='1'>");
+    content += F("<option value='Off'>Off</option>");
+    content += F("<option value='On'>On</option>");
+    content += F("</select>");
+    content += F("</td>");
+    content += F("<td></td>");
+    content += F("</tr>");
   
+    content += F("<tr>");
+    content += F("<td>Lora only in Standy?</td>");
+    content += F("<td>");
+    content += F("<select name='loraStandbyMode' size='1'>");
+    content += F("<option value='Standby'>Standby</option>");
+    content += F("<option value='Always'>Always (currently not working)</option>");
+    content += F("</select>");
+    content += F("</td>");
+    content += F("<td></td>");
+    content += F("</tr>");
+
     content += F("<tr>");
     content += F("<td><h3>Calibration Settings</h3></td>");
     content += F("<td></td>");

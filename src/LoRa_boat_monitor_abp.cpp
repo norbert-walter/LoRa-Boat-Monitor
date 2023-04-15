@@ -117,6 +117,16 @@ StateMachine machine = StateMachine();
 int loopcounter = 0;
 
 bool toggleDisplayStatus = false;
+long LoraSendDurationSeconds = 0;
+
+hw_timer_t *My_timer = NULL;
+
+void IRAM_ATTR onTimer(){
+  //digitalWrite(LED, !digitalRead(LED));
+  Serial.println("onTimer()");
+  //Serial.println(xPortGetCoreID());
+  sendLoraQueue = true;
+}
 
 /*
  *  States:
@@ -260,10 +270,14 @@ void enableWiFi(){
 }
 
 void state0(){
+  //Serial.println(F("State0"));
+  if (alarm1 == false) {
+    return;
+  }
   if(machine.executeOnce){
     if (alarm1 == true) {
       // disable gps
-      Timer1.detach();
+      //Timer1.detach();
 
       u8x8.clearDisplay();
       u8x8.setFont(u8x8_font_chroma48medium8_r);
@@ -271,12 +285,12 @@ void state0(){
       u8x8.drawString(0,1,"Batt switch off");
       u8x8.drawString(0,2,"Lora mode");
       u8x8.refreshDisplay();    // Only required for SSD1606/7
-
-      //UBLOX_GPS_Shutdown();
-      rtc_gpio_pullup_en(GPIO_NUM_39);
-      esp_sleep_enable_ext0_wakeup(GPIO_NUM_39,0);
+      sendLoraQueue = true;
     }
   }
+
+  readValues();
+  delay(200);
 
   static unsigned long lastPrintTime = 0;
   const bool timeCriticalJobs = os_queryTimeCriticalJobs(ms2osticksRound((TX_INTERVAL * 1000)));
@@ -289,10 +303,10 @@ void state0(){
   }
   else if (lastPrintTime + 2000 < millis())
   {
-    Serial.print(F("Cannot sleep "));
-    Serial.print(F("TimeCriticalJobs: "));
-    Serial.print(timeCriticalJobs);
-    Serial.print(", ");
+    //Serial.print(F("Cannot sleep "));
+    //Serial.print(F("TimeCriticalJobs: "));
+    //Serial.print(timeCriticalJobs);
+    //Serial.print(", ");
 
     if (toggleDisplayStatus) {
       u8x8.drawString(0,4,".");
@@ -302,10 +316,9 @@ void state0(){
       toggleDisplayStatus = true;
     }
 
-    LoraWANPrintLMICOpmode();
-    PrintRuntime();
+    //LoraWANPrintLMICOpmode();
+    //PrintRuntime();
     lastPrintTime = millis();
-    delay(500);
     long seconds = millis() / 1000;
     if (seconds >= 50) {
       Serial.println(F("seconds >= 50"));
@@ -314,18 +327,11 @@ void state0(){
       GoDeepSleep();
     }
   }
-
-  //u8x8.setFont(u8x8_font_chroma48medium8_r);
-  //u8x8.drawString(0,0,"State 0   ");
-  //u8x8.drawString(0,1,"in loop");
-  //u8x8.refreshDisplay();    // Only required for SSD1606/7
 }
 
 void state1(){
-  //DebugPrintln(3, "state1");
   if(machine.executeOnce){
     DebugPrintln(3, "state1 once");
-
     enableWiFi();
     u8x8.setPowerSave(0);
     u8x8.clearDisplay();
@@ -335,46 +341,45 @@ void state1(){
     u8x8.drawString(0,2,"WiFI mode");
     u8x8.refreshDisplay();    // Only required for SSD1606/7
 
-    //UBLOX_GPS_Wakeup();                               //wakeup GPS 
-
-    //os_setTimedCallback(&sendjob, os_getTime()+sec2osticks(TX_INTERVAL), do_send);
-    // stop Lora
-    //os_clearCallback(&sendjob);
-  }
-  httpServer.handleClient();   // HTTP Server-handler for HTTP update server
-  
-  static unsigned long lastPrintTime = 0;
-  const bool timeCriticalJobs = os_queryTimeCriticalJobs(ms2osticksRound((TX_INTERVAL * 1000)));
-  if (!timeCriticalJobs && GOTO_DEEPSLEEP == true && !(LMIC.opmode & OP_TXRXPEND)) {
-    //Serial.print(F("Can go sleep "));
-    //LoraWANPrintLMICOpmode();
-    //SaveLMICToRTC(TX_INTERVAL);
-    //GoDeepSleep();
-    //delay(5000);
-    GOTO_DEEPSLEEP = false;
-  }
-  else if (lastPrintTime + 2000 < millis())
-  {
-    Serial.print(F("Cannot sleep "));
-    Serial.print(F("TimeCriticalJobs: "));
-    Serial.print(timeCriticalJobs);
-    Serial.print(", ");
-
-    LoraWANPrintLMICOpmode();
-    PrintRuntime();
-    lastPrintTime = millis();
-    delay(500);
-    long seconds = millis() / 1000;
-    if (seconds >= 50) {
-      Serial.println(F("seconds >= 50"));
-      //SaveLMICToRTC(TX_INTERVAL);
-      delay(500);
-      //GoDeepSleep();
+    if (String(actconf.loraStandbyMode) == "Always") {
+      timerAlarmEnable(My_timer);
+    } else {
+      timerAlarmDisable(My_timer);
     }
   }
 
+  readValues();
+  delay(200);
+
+  if (String(actconf.loraStandbyMode) == "Always") {
+    static unsigned long lastPrintTime = 0;
+    const bool timeCriticalJobs = os_queryTimeCriticalJobs(ms2osticksRound((TX_INTERVAL * 1000)));
+    if (!timeCriticalJobs && GOTO_DEEPSLEEP == true && !(LMIC.opmode & OP_TXRXPEND)) {
+      Serial.println(F("Lora send done."));
+      GOTO_DEEPSLEEP = false;
+    }
+    else if (lastPrintTime + 2000 < millis())
+    {
+      //Serial.print(F("Cannot sleep "));
+      //Serial.print(F("TimeCriticalJobs: "));
+      //Serial.print(timeCriticalJobs);
+      //Serial.print(", ");
+
+      if (toggleDisplayStatus) {
+        u8x8.drawString(0,4,".");
+        toggleDisplayStatus = false;
+      } else {
+        u8x8.drawString(0,4," ");
+        toggleDisplayStatus = true;
+      }
+    }
+  }
+  httpServer.handleClient();   // HTTP Server-handler for HTTP update server
   loopcounter++;
 }
+
+State* S0 = machine.addState(&state0); 
+State* S1 = machine.addState(&state1);
 
 bool transitionS0S1(){
   if (alarm1 == false) {
@@ -385,7 +390,6 @@ bool transitionS0S1(){
 }
 
 bool transitionS1S0(){
-  //return true;
   if (alarm1 == true) {
     return true;
   } else {
@@ -396,9 +400,6 @@ bool transitionS1S0(){
 bool transitionS1S2(){
   return true;
 }
-
-State* S0 = machine.addState(&state0); 
-State* S1 = machine.addState(&state1);
 
 /*
 Method to print the reason by which ESP32
@@ -519,19 +520,6 @@ void setup() {
   u8x8.setFont(u8x8_font_chroma48medium8_r);
   u8x8.drawString(0,0,"Booting...");
   u8x8.refreshDisplay();    // Only required for SSD1606/7  
-
-  // Create task for LoRa code
-  //xTaskCreatePinnedToCore(
-  //                  Task1code,  /* Task function */
-  //                  "Task1",    /* Name of task */
-  //                  10000,      /* Stack size of task */
-  //                  NULL,       /* Parameter of the task */
-  //                  1,          /* Priority of the task */
-  //                  &Task1,     /* Task handle to keep track of created task */
-  //                  0);         /* Pin task to core 0 */
-  //delay(500);
-
-  //vTaskDelete(Task1);
 
   // Read the first byte from the EEPROM
   EEPROM.begin(sizeEEPROM);
@@ -756,82 +744,18 @@ void setup() {
   // Set send interval
   TX_INTERVAL = actconf.tinterval * 30;
 
-  // LMIC init
-  os_init();
-  // Reset the MAC state. Session and pending data transfers will be discarded.
-  LMIC_reset();
-//  LMIC_setClockError(MAX_CLOCK_ERROR * 1 / 100);
-  LMIC_setClockError(MAX_CLOCK_ERROR * 10 / 100);  // For better receiving results
+  // Create task for LoRa code
+  xTaskCreatePinnedToCore(
+                    Task1code,  /* Task function */
+                    "Task1",    /* Name of task */
+                    10000,      /* Stack size of task */
+                    NULL,       /* Parameter of the task */
+                    1,          /* Priority of the task */
+                    &Task1,     /* Task handle to keep track of created task */
+                    0);         /* Pin task to core 0 */
+  delay(500);
 
-  // Set static session parameters. Instead of dynamically establishing a session
-  // by joining the network, precomputed session parameters are be provided.
-  #ifdef PROGMEM
-  // On AVR, these values are stored in flash and only copied to RAM
-  // once. Copy them to a temporary buffer here, LMIC_setSession will
-  // copy them into a buffer of its own again.
-  uint8_t appskey[sizeof(actconf.appkey)];
-  uint8_t nwkskey[sizeof(actconf.nskey)];
-  memcpy_P(appskey, actconf.appkey, sizeof(actconf.appkey));
-  memcpy_P(nwkskey, actconf.nskey, sizeof(actconf.nskey));
-  LMIC_setSession (0x1, actconf.devaddr, nwkskey, appskey);
-  #else
-  // If not running an AVR with PROGMEM, just use the arrays directly
-  LMIC_setSession (0x1, actconf.devaddr, actconf.nskey, actconf.appkey);
-  #endif
-
-  #if defined(CFG_eu868)
-  // Set up the channels used by the Things Network, which corresponds
-  // to the defaults of most gateways. Without this, only three base
-  // channels from the LoRaWAN specification are used, which certainly
-  // works, so it is good for debugging, but can overload those
-  // frequencies, so be sure to configure the full frequency range of
-  // your network here (unless your network autoconfigures them).
-  // Setting up channels should happen after LMIC_setSession, as that
-  // configures the minimal channel set.
-  // NA-US channels 0-71 are configured automatically
-  LMIC_setupChannel(0, 868100000, DR_RANGE_MAP(DR_SF12, DR_SF7),  BAND_CENTI);      // g-band
-  LMIC_setupChannel(1, 868300000, DR_RANGE_MAP(DR_SF12, DR_SF7B), BAND_CENTI);      // g-band
-  LMIC_setupChannel(2, 868500000, DR_RANGE_MAP(DR_SF12, DR_SF7),  BAND_CENTI);      // g-band
-  LMIC_setupChannel(3, 867100000, DR_RANGE_MAP(DR_SF12, DR_SF7),  BAND_CENTI);      // g-band
-  LMIC_setupChannel(4, 867300000, DR_RANGE_MAP(DR_SF12, DR_SF7),  BAND_CENTI);      // g-band
-  LMIC_setupChannel(5, 867500000, DR_RANGE_MAP(DR_SF12, DR_SF7),  BAND_CENTI);      // g-band
-  LMIC_setupChannel(6, 867700000, DR_RANGE_MAP(DR_SF12, DR_SF7),  BAND_CENTI);      // g-band
-  LMIC_setupChannel(7, 867900000, DR_RANGE_MAP(DR_SF12, DR_SF7),  BAND_CENTI);      // g-band
-  LMIC_setupChannel(8, 868800000, DR_RANGE_MAP(DR_FSK,  DR_FSK),  BAND_MILLI);      // g2-band
-  // TTN defines an additional channel at 869.525Mhz using SF9 for class B
-  // devices' ping slots. LMIC does not have an easy way to define set this
-  // frequency and support for class B is spotty and untested, so this
-  // frequency is not configured here.
-  #elif defined(CFG_us915)
-  // NA-US channels 0-71 are configured automatically
-  // but only one group of 8 should (a subband) should be active
-  // TTN recommends the second sub band, 1 in a zero based count.
-  // https://github.com/TheThingsNetwork/gateway-conf/blob/master/US-global_conf.json
-  LMIC_selectSubBand(1);
-  #endif
-
-  // Enable the used channels
-  setChannel(actconf.lchannel);
-
-  // Disable link check validation
-  LMIC_setLinkCheckMode(0);
-
-  // TTN uses SF9 for its RX2 window.
-  LMIC.dn2Dr = DR_SF9;
-
-  // Set spreading factor depends on transmit slot and transmit power for uplink
-  // (note: txpow seems to be ignored by the library)
-  setSF(slot, actconf.spreadf, actconf.dynsf);
-
-  if (RTC_LMIC.seqnoUp != 0)
-  {
-    LoadLMICFromRTC();
-  }
-
-  LoraWANDebug(LMIC);
-
-  // Start job
-  do_send(&sendjob);
+  //vTaskDelete(Task1);
 
   // sleep config...
   //Increment boot number and print it every reboot
@@ -847,16 +771,31 @@ void setup() {
 
   S0->addTransition(&transitionS0S1,S1);    // Transition to itself (see transition logic for details)
   S1->addTransition(&transitionS1S0,S0);  // S1 transition to S0
+
+  if (String(actconf.standbyMode) == "On") {
+    rtc_gpio_pullup_en(GPIO_NUM_39);
+    esp_sleep_enable_ext0_wakeup(GPIO_NUM_39,0);
+  }
+  
+  My_timer = timerBegin(0, 80, true);
+  timerAttachInterrupt(My_timer, &onTimer, true);
+  timerAlarmWrite(My_timer, 60000000, true);
+  //timerAlarmEnable(My_timer);
+
+  readValues();
 }
 
 void loop() {
   // LoRa activities
-  os_runloop_once();
+  //os_runloop_once();
 
 	//httpServer.handleClient();   // HTTP Server-handler for HTTP update server
-  readValues();
+  //readValues();
   //delay(1000);
   machine.run();
+
+  //Serial.print("loop is running on core ");
+  //Serial.println(xPortGetCoreID());
   
   //VEdirectSend();
 

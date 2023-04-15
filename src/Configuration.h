@@ -15,7 +15,7 @@ typedef struct {
   char cssid[31] = "MyBoat";                // SSID of WiFi Client
   char cpassword[31] = "S6587rr94P";        // Password of WiFi Client
   int timeout = 30;                         // Connection timeout for client in [s] [30|90|120|150|180|210|240|270|300]
-  char sssid[31] = "NoWa";                  // SSID of WiFi Server
+  char sssid[31] = "LoRaBoatMonitor";       // SSID of WiFi Server
   char spassword[31] = "12345678";          // Password of WiFi Server
   int apchannel = 1;                        // Assess Point channel [1...13]
   int maxconnections = 2;                   // Max number of connection for WiFi clients [1...4]
@@ -67,6 +67,8 @@ typedef struct {
   char tempUnit[2] = "C";                   // Unit of temperature [C|F]
 
   char envSensor[20] = "Off";               // Select environment sensor [Off|BME280|VEdirect-Read|VEdirect-Send]
+  char standbyMode[4] = "Off";              // Select Standby mode [Off|On]
+  char loraStandbyMode[8] = "Standby";      // Select is Lora only sends in Standby mode [Standby|Always]
 } configData;
 
 #endif

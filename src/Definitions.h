@@ -212,5 +212,10 @@ String dwrange[9] = {"20", "25", "30", "35", "40", "45", "50", "55", "60"};
 String tstype[2] = {"Off", "DS18B20"};
 String tempunits[2] = {"C", "F"};
 String envSensor[4] = {"Off", "BME280", "VEdirect-Read", "VEdirect-Send"};
+String standbyMode[2] = {"Off", "On"};
+String loraStandbyMode[2] = {"Standby", "Always"};
+
+boolean sendLoraQueue = false;
+
 
 #endif

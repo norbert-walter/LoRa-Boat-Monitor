@@ -89,6 +89,12 @@ String JS()
  content +=F( "envSensor = document.getElementById('envSensor');");
  content +=F( "envSensor.value = myObj.Device.MeasuringValues.EnvSensor.Value;");
 
+ content +=F( "standbyMode = document.getElementById('standbyMode');");
+ content +=F( "standbyMode.value = myObj.Device.MeasuringValues.standbyMode.Value;");
+
+ content +=F( "loraStandbyMode = document.getElementById('loraStandbyMode');");
+ content +=F( "loraStandbyMode.value = myObj.Device.MeasuringValues.loraStandbyMode.Value;");
+
  // If Demo Mode active the give out a message
  content += F("servermode = myObj.Device.NetworkParameter.ServerMode;");
  content += F("if (servermode == 4) {");
