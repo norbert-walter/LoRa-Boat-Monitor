@@ -216,6 +216,4 @@ String standbyMode[2] = {"Off", "On"};
 String loraStandbyMode[2] = {"Standby", "Always"};
 
 boolean sendLoraQueue = false;
-
-
 #endif

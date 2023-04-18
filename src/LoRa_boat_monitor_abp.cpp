@@ -229,11 +229,20 @@ void enableWiFi(){
       // Wait until is connected otherwise abort connection after x connection trys
       WiFi.begin(actconf.cssid, actconf.cpassword);
       ccounter = 0;
+      boolean toggleWifiConnectionStatus = false;
       while ((WiFi.status() != WL_CONNECTED) && (ccounter <= maxccounter)) {
         delay(500);
         DebugPrint(3, ".");
+        if (toggleWifiConnectionStatus) {
+          u8x8.drawString(0,4,".");
+          toggleWifiConnectionStatus = false;
+        } else {
+          u8x8.drawString(0,4," ");
+          toggleWifiConnectionStatus = true;
+        }
         ccounter ++;
       }
+      u8x8.drawString(0,4," ");
       DebugPrintln(3, "");
       if (WiFi.status() == WL_CONNECTED){
         DebugPrint(3, "WiFi client connected with IP: ");
@@ -269,6 +278,108 @@ void enableWiFi(){
     //*****************************************************************************************
 }
 
+void VEdirectSend()
+{
+  boolean debugPrintValues = false;
+// Send VE.direct data all 1s
+  if(millis() > starttime0 + 1000){
+    static int count;
+    starttime0 = millis();          // Read actual time
+    if (String(actconf.envSensor) == "VEdirect-Send") {
+      if (debugPrintValues) {
+        DebugPrintln(3, "VE.direct Output");
+      }
+      sendVEdirect();               // Send VE.direct text data
+      // ":78DED000B05C4\n"
+      int voltageOut = voltage * 100;
+      sendBinaryValue(":78DED00", voltageOut); // Send binary data
+      if(count == 0){
+        sendVEdirectBinary();       // VEdirect binary data (setup and data) al 10 times
+      }
+    }
+    count ++;
+    count = count % 10;
+  }
+
+/*
+  // Mirror all Ve.direct data to serial 0
+  int data;
+  while (Serial1.available()) {
+    //Show VE.direct Daten on serial port 0
+    data = Serial1.read();
+    Serial.write(data);
+  }
+*/
+}
+
+void VEdirectRead()
+{
+  boolean debugPrintValues = false;
+// Read VE.direct values (BMV-712 tested)
+  if (String(actconf.envSensor) == "VEdirect-Read") {
+    int rawvoltage = 0;
+    char rc;
+    String receivedChars;
+
+    if (Serial1.available()) {
+      rc = Serial1.read();
+      receivedChars += String(rc);
+      // Read actual voltage
+      if (receivedChars == "V"){
+        rawvoltage = Serial1.parseInt();
+        if(rawvoltage > 712){
+          vedirectVoltage = rawvoltage / 1000.0;
+          if (debugPrintValues) {
+            Serial.print("VE.direct V: ");
+            Serial.println(vedirectVoltage, 3);
+          }
+          receivedChars = "";
+        }
+      }
+      // Read actual current
+      if (receivedChars == "I"){
+        vedirectCurrent = Serial1.parseInt() / 1000.0;
+        if (debugPrintValues) {
+          Serial.print("VE.direct I: ");
+          Serial.println(vedirectCurrent);
+        }
+        receivedChars = "";
+      }
+      // Read actual power
+      if (receivedChars == "P"){
+        vedirectPower = Serial1.parseInt();
+        if (debugPrintValues) {
+          Serial.print("VE.direct P: ");
+          Serial.println(vedirectPower);
+        }
+        receivedChars = "";
+      }
+      // Read actual SOC
+      if (receivedChars == "S"){
+        vedirectSOC = Serial1.parseInt();
+        if (debugPrintValues) {
+          Serial.print("VE.direct SOC: ");
+          Serial.println(vedirectSOC);
+        }
+        receivedChars = "";
+      }
+      // Read actual temperature
+      if (receivedChars == "T"){
+        vedirectTemp = Serial1.parseInt() / 10.0;
+        if (debugPrintValues) {
+          Serial.print("VE.direct T: ");
+          Serial.println(vedirectTemp);
+        }
+        receivedChars = "";
+      }
+      // If line end then clear lina data
+      if (rc == '\n'){
+        receivedChars = "";
+      }
+    }
+  }
+}
+
 void state0(){
   //Serial.println(F("State0"));
   if (alarm1 == false) {
@@ -278,7 +389,6 @@ void state0(){
     if (alarm1 == true) {
       // disable gps
       //Timer1.detach();
-
       u8x8.clearDisplay();
       u8x8.setFont(u8x8_font_chroma48medium8_r);
       u8x8.drawString(0,0,"State 0   ");
@@ -288,17 +398,15 @@ void state0(){
       sendLoraQueue = true;
     }
   }
-
   readValues();
-  delay(200);
-
+  delay(20);
   static unsigned long lastPrintTime = 0;
   const bool timeCriticalJobs = os_queryTimeCriticalJobs(ms2osticksRound((TX_INTERVAL * 1000)));
   if (!timeCriticalJobs && GOTO_DEEPSLEEP == true && !(LMIC.opmode & OP_TXRXPEND)) {
     Serial.print(F("Can go sleep "));
     LoraWANPrintLMICOpmode();
     SaveLMICToRTC(TX_INTERVAL);
-    delay(500);
+    delay(500); // give some time to save.
     GoDeepSleep();
   }
   else if (lastPrintTime + 2000 < millis())
@@ -320,7 +428,7 @@ void state0(){
     //PrintRuntime();
     lastPrintTime = millis();
     long seconds = millis() / 1000;
-    if (seconds >= 50) {
+    if (seconds >= 50) {  // Abord sending, after 50 seconds
       Serial.println(F("seconds >= 50"));
       SaveLMICToRTC(TX_INTERVAL);
       delay(500);
@@ -333,6 +441,7 @@ void state1(){
   if(machine.executeOnce){
     DebugPrintln(3, "state1 once");
     enableWiFi();
+    delay(2000);    // to be able to read the displayed infos.
     u8x8.setPowerSave(0);
     u8x8.clearDisplay();
     u8x8.setFont(u8x8_font_chroma48medium8_r);
@@ -349,32 +458,94 @@ void state1(){
   }
 
   readValues();
-  delay(200);
+  delay(20);
 
   if (String(actconf.loraStandbyMode) == "Always") {
     static unsigned long lastPrintTime = 0;
     const bool timeCriticalJobs = os_queryTimeCriticalJobs(ms2osticksRound((TX_INTERVAL * 1000)));
+    //u8x8.drawString(0,4,"Sending Lora");
     if (!timeCriticalJobs && GOTO_DEEPSLEEP == true && !(LMIC.opmode & OP_TXRXPEND)) {
       Serial.println(F("Lora send done."));
       GOTO_DEEPSLEEP = false;
     }
-    else if (lastPrintTime + 2000 < millis())
+    /*else if (lastPrintTime + 2000 < millis())
     {
-      //Serial.print(F("Cannot sleep "));
-      //Serial.print(F("TimeCriticalJobs: "));
-      //Serial.print(timeCriticalJobs);
-      //Serial.print(", ");
-
       if (toggleDisplayStatus) {
-        u8x8.drawString(0,4,".");
+        u8x8.drawString(0,5,".");
         toggleDisplayStatus = false;
       } else {
-        u8x8.drawString(0,4," ");
+        u8x8.drawString(0,5," ");
         toggleDisplayStatus = true;
       }
-    }
+    }*/
   }
   httpServer.handleClient();   // HTTP Server-handler for HTTP update server
+
+  VEdirectSend();
+
+  // Read measuring data and display on OLED all 1s
+  if(millis() > starttime1 + 1000){
+    starttime1 = millis();        // Read actual time
+
+    // BME280 measuerement
+    if (String(actconf.envSensor) == "BME280") {
+      bme.takeForcedMeasurement(); // has no effect in normal mode
+    }
+    readValues();
+    writeDisplay();
+  }
+
+  VEdirectRead();
+
+  // TCP-Server for NMEA0183
+  WiFiClient client = server.available();// Check if a client is connected
+  int i = 0;
+
+  // While TCP client is connected or Serial Mode is active
+  while ((client.connected() && !client.available()) || (int(actconf.serverMode) == 1)) {
+
+    httpServer.handleClient();      // HTTP Server-handler for HTTP update server
+
+    if ((i == 0) && ((int(actconf.serverMode) == 0) || (int(actconf.serverMode) == 4))) {
+      DebugPrintln(3, "TCP client connected");
+      DebugPrintln(3, "");
+    }
+
+    // Read measuring data and display on OLED all 1s
+    if(millis() > starttime2 + 1000){
+      starttime2 = millis();        // Read actual time
+
+      // BME280 measuerement
+      if (String(actconf.envSensor) == "BME280") {
+        bme.takeForcedMeasurement();  // has no effect in normal mode
+      }  
+      readValues();
+      writeDisplay();
+    }
+
+    // Sending XDR data
+    if (flag1 == true){
+      i++;
+      DebugPrintln(3, "");
+      DebugPrint(3, "Send package:");
+      DebugPrintln(3, i);
+
+      if((int(actconf.serverMode) == 0) || (int(actconf.serverMode) == 1) || (int(actconf.serverMode) == 4)){
+         if(int(actconf.senddata) == 1){
+            if (String(actconf.envSensor) == "BME280") {
+              client.println(sendXDR1(1));  // Send XDR1 telegram environment sensors
+            }
+            client.println(sendXDR2(1));    // Send XDR2 telegram battery sensors
+            client.println(sendXDR3(1));    // Send XDR3 telegram level and control
+            if(nmea != ""){
+              client.println(sendRMC(1));   // Send GPS RMC telegram
+            }
+         }
+      }
+      flag1 = false;                        // Reset the send flag
+    }
+  }
+
   loopcounter++;
 }
 
@@ -407,9 +578,7 @@ has been awaken from sleep
 */
 void print_wakeup_reason(){
   esp_sleep_wakeup_cause_t wakeup_reason;
-
   wakeup_reason = esp_sleep_get_wakeup_cause();
-
   switch(wakeup_reason)
   {
     case ESP_SLEEP_WAKEUP_EXT0 : Serial.println("Wakeup caused by external signal using RTC_IO"); break;
@@ -420,96 +589,6 @@ void print_wakeup_reason(){
     default : Serial.printf("Wakeup was not caused by deep sleep: %d\n",wakeup_reason); break;
   }
 }
-
-
-void VEdirectSend()
-{
-// Send VE.direct data all 1s
-  if(millis() > starttime0 + 1000){
-    static int count;
-    starttime0 = millis();          // Read actual time
-    if (String(actconf.envSensor) == "VEdirect-Send") {
-      DebugPrintln(3, "VE.direct Output");
-      sendVEdirect();               // Send VE.direct text data
-      // ":78DED000B05C4\n"
-      int voltageOut = voltage * 100;
-      sendBinaryValue(":78DED00", voltageOut); // Send binary data
-      if(count == 0){
-        sendVEdirectBinary();       // VEdirect binary data (setup and data) al 10 times
-      }
-    }
-    count ++;
-    count = count % 10;
-  }
-
-/*
-  // Mirror all Ve.direct data to serial 0
-  int data;
-  while (Serial1.available()) {
-    //Show VE.direct Daten on serial port 0
-    data = Serial1.read();
-    Serial.write(data);
-  }
-*/
-}
-
-void VEdirectRead()
-{
-// Read VE.direct values (BMV-712 tested)
-  if (String(actconf.envSensor) == "VEdirect-Read") {
-    int rawvoltage = 0;
-    char rc;
-    String receivedChars;
-
-    if (Serial1.available()) {
-      rc = Serial1.read();
-      receivedChars += String(rc);
-      // Read actual voltage
-      if (receivedChars == "V"){
-        rawvoltage = Serial1.parseInt();
-        if(rawvoltage > 712){
-          vedirectVoltage = rawvoltage / 1000.0;
-//          Serial.print("VE.direct V: ");
-//          Serial.println(vedirectVoltage, 3);
-          receivedChars = "";
-        }
-      }
-      // Read actual current
-      if (receivedChars == "I"){
-        vedirectCurrent = Serial1.parseInt() / 1000.0;
-//        Serial.print("VE.direct I: ");
-//        Serial.println(vedirectCurrent);
-        receivedChars = "";
-      }
-      // Read actual power
-      if (receivedChars == "P"){
-        vedirectPower = Serial1.parseInt();
-//        Serial.print("VE.direct P: ");
-//        Serial.println(vedirectPower);
-        receivedChars = "";
-      }
-      // Read actual SOC
-      if (receivedChars == "S"){
-        vedirectSOC = Serial1.parseInt();
-//        Serial.print("VE.direct SOC: ");
-//        Serial.println(vedirectSOC);
-        receivedChars = "";
-      }
-      // Read actual temperature
-      if (receivedChars == "T"){
-        vedirectTemp = Serial1.parseInt() / 10.0;
-//        Serial.print("VE.direct T: ");
-//        Serial.println(vedirectTemp);
-        receivedChars = "";
-      }
-      // If line end then clear lina data
-      if (rc == '\n'){
-        receivedChars = "";
-      }
-    }
-  }
-}
-
 
 void setup() {
   //##### Start OLED #####
@@ -551,25 +630,21 @@ void setup() {
   if(String(actconf.envSensor) == "VEdirect-Read" || String(actconf.envSensor) == "VEdirect-Send"){
     Serial1.begin(19200, SERIAL_8N1, RXD1, TXD1); // VE.direct Victron interface (read and write)
   }
-  delay(200);
+  //delay(200);
   Serial2.begin(9600, SERIAL_8N1, RXD2, TXD2);  // GPS (NMEA0183)
-  delay(200);
+  //delay(200);
 
   macAddress = ESP.getEfuseMac();
   macAddressTrunc = macAddress << 40;
   chipId = macAddressTrunc >> 40;
 
   //##### Start OLED #####
-  //u8x8.begin();
-  //u8x8.setPowerSave(0);
-
-  /*u8x8.setFont(u8x8_font_chroma48medium8_r);
   u8x8.clearDisplay();
   u8x8.drawString(0,0,"NoWa(C)OBP");
   u8x8.drawString(11,0,actconf.fversion);
-  u8x8.drawString(0,2,"Connection to:");
+  u8x8.drawString(0,2,"Connecting to:");
   u8x8.drawString(0,3,actconf.cssid);
-  u8x8.refreshDisplay();*/    // Only required for SSD1606/7
+  u8x8.refreshDisplay();    // Only required for SSD1606/7
 
   // ESP8266 Information Data
   DebugPrintln(3, "Booting Sketch...");
@@ -753,9 +828,7 @@ void setup() {
                     1,          /* Priority of the task */
                     &Task1,     /* Task handle to keep track of created task */
                     0);         /* Pin task to core 0 */
-  delay(500);
-
-  //vTaskDelete(Task1);
+  //delay(500);
 
   // sleep config...
   //Increment boot number and print it every reboot
@@ -780,89 +853,10 @@ void setup() {
   My_timer = timerBegin(0, 80, true);
   timerAttachInterrupt(My_timer, &onTimer, true);
   timerAlarmWrite(My_timer, 60000000, true);
-  //timerAlarmEnable(My_timer);
 
-  readValues();
+  readValues();     // initial read after boot, to get the status of alarm pin.
 }
 
 void loop() {
-  // LoRa activities
-  //os_runloop_once();
-
-	//httpServer.handleClient();   // HTTP Server-handler for HTTP update server
-  //readValues();
-  //delay(1000);
   machine.run();
-
-  //Serial.print("loop is running on core ");
-  //Serial.println(xPortGetCoreID());
-  
-  //VEdirectSend();
-
-  // Read measuring data and display on OLED all 1s
-  /*if(millis() > starttime1 + 1000){
-    starttime1 = millis();        // Read actual time
-
-    // BME280 measuerement
-    if (String(actconf.envSensor) == "BME280") {
-      bme.takeForcedMeasurement(); // has no effect in normal mode
-    }
-    readValues();
-    writeDisplay();
-  }*/
-
-  //VEdirectRead();
-
-  // HTTP Server-handler for HTTP update server
-  //httpServer.handleClient();
-
-  // TCP-Server for NMEA0183
-  /*WiFiClient client = server.available();// Check if a client is connected
-  int i = 0;
-
-  // While TCP client is connected or Serial Mode is active
-  while ((client.connected() && !client.available()) || (int(actconf.serverMode) == 1)) {
-
-    httpServer.handleClient();      // HTTP Server-handler for HTTP update server
-
-    if ((i == 0) && ((int(actconf.serverMode) == 0) || (int(actconf.serverMode) == 4))) {
-      DebugPrintln(3, "TCP client connected");
-      DebugPrintln(3, "");
-    }*/
-
-    // Read measuring data and display on OLED all 1s
-    /*if(millis() > starttime2 + 1000){
-      starttime2 = millis();        // Read actual time
-
-      // BME280 measuerement
-      if (String(actconf.envSensor) == "BME280") {
-        bme.takeForcedMeasurement();  // has no effect in normal mode
-      }  
-      readValues();
-      writeDisplay();
-    }*/
-
-    // Sending XDR data
-    /*if (flag1 == true){
-      i++;
-      DebugPrintln(3, "");
-      DebugPrint(3, "Send package:");
-      DebugPrintln(3, i);
-
-      if((int(actconf.serverMode) == 0) || (int(actconf.serverMode) == 1) || (int(actconf.serverMode) == 4)){
-         if(int(actconf.senddata) == 1){
-            if (String(actconf.envSensor) == "BME280") {
-              client.println(sendXDR1(1));  // Send XDR1 telegram environment sensors
-            }
-            client.println(sendXDR2(1));    // Send XDR2 telegram battery sensors
-            client.println(sendXDR3(1));    // Send XDR3 telegram level and control
-            if(nmea != ""){
-              client.println(sendRMC(1));   // Send GPS RMC telegram
-            }
-         }
-      }
-      flag1 = false;                        // Reset the send flag
-    }
-  }*/
-
 }

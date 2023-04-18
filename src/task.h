@@ -1,14 +1,10 @@
 
 //Task1code LoRa
 void Task1code( void * pvParameters ){
-  //Serial.print("Task1code is running on core ");
-  //Serial.println(xPortGetCoreID());
-
   // LMIC init
   os_init();
   // Reset the MAC state. Session and pending data transfers will be discarded.
   LMIC_reset();
-  //  LMIC_setClockError(MAX_CLOCK_ERROR * 1 / 100);
   LMIC_setClockError(MAX_CLOCK_ERROR * 10 / 100);  // For better receiving results
 
   // Set static session parameters. Instead of dynamically establishing a session
