@@ -7,7 +7,7 @@ Menge Wert               Device              Bauteile
 4     1N4007             BYD13               D1, D2, D5, D7
 1     510		         R-EU_0207/10        R1 
 5     1k                 R-EU_0207/10        R2, R3, R4, R7     
-1     5V                 RELAIS              K1                     
+1     5V                 RELAIS 4103E        K1                     
 1     P6KE22A            1N4728              D4                     
 1     10k                R-EU_0207/10        R5, R8                     
 1     33k                R-EU_0207/10        R6                     
