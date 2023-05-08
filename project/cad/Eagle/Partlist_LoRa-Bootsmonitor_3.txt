@@ -12,7 +12,7 @@ Menge Wert               Device              Bauteile
 1     10k                R-EU_0207/10        R5, R8                     
 1     33k                R-EU_0207/10        R6                     
 1     47u                CPOL-EUE5-8.5       C1                     
-1     BC548B             BC548B-PNP-TO92-EBC T1                     
+1     BC548B             BC548B-NPN-TO92-EBC T1                     
 1     BME280             BME280              Q3                     
 2     BZX55C3V3          BZX55               D3, D6                 
 1     GY-GPS6MV2         GY_GPS6MV2_H        Q2                     
