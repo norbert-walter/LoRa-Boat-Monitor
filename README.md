@@ -55,7 +55,7 @@ Image: Block diagram LoRa boat monitor
 
 ## Create your own code
 
-You have the option of creating your own code using the online [software development environment Gitpod](https://gitpod.io/#https://github.com/norbert-walter/LoRa-Boat-Monitor). Follow this link and a finished development environment similar to PlatformIO will be created that runs in your browser with all code components. To compile the software, enter ***bash run*** in the terminal. In the workspace you will find the compiled binary code under ***.pio/build/heltec_wifi_lora_32_V2/firmware.bin***. With a right click you can download the binary file.
+You have the option of creating your own code using the online [software development environment Gitpod](https://gitpod.io/#https://github.com/norbert-walter/LoRa-Boat-Monitor). Follow this link and a finished development environment similar to PlatformIO will be created that runs in your browser with all code components. To compile the software, enter ***bash run*** in the terminal. In the workspace you will find the compiled binary code under ***.pio/build/heltec_wifi_lora_32_V2/firmware.bin***. With a right click you can download the binary file. You need a account for Gitpod.
 
 ## Device flash process
 
