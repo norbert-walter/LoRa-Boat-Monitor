@@ -50,7 +50,7 @@ Image: Block diagram LoRa boat monitor
 * Automatic data storage for the last 31 days at Ubidots
 * Use of cheap embedded modules
 * No SMD components on the board and easy to build
-* Board can be ordered here:  [https://aisler.net/p/TUFQWBEF](https://aisler.net/p/TUFQWBEF)
+* Board can be ordered here:[https://aisler.net/p/GEIYWWXZ](https://aisler.net/p/GEIYWWXZ)
 * Android app
 
 ## Create your own code
