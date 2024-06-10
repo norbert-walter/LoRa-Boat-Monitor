@@ -50,13 +50,12 @@ Image: Block diagram LoRa boat monitor
 * Automatic data storage for the last 31 days at Ubidots
 * Use of cheap embedded modules
 * No SMD components on the board and easy to build
-* Board can be ordered here:  [https://aisler.net/p/TUFQWBEF](https://aisler.net/p/TUFQWBEF)
+* Board can be ordered here:[https://aisler.net/p/GEIYWWXZ](https://aisler.net/p/GEIYWWXZ)
 * Android app
 
 ## Create your own code
 
-You have the option of creating your own code using the online [software development environment Gitpod](https://gitpod.io/#https://github.com/norbert-walter/LoRa-Boat-Monitor). Follow this link and a finished development environment similar to PlatformIO will be created that runs in your browser with all code components. To compile the software, enter ***bash run*** in the terminal. In the workspace you will find the compiled binary code under ***.pio/build/heltec_wifi_lora_32_V2/firmware.bin***. With a right click you can download the binary file.
-
+You have the option of creating your own code using the online [software development environment Gitpod](https://gitpod.io/#https://github.com/norbert-walter/LoRa-Boat-Monitor). Follow this link and a finished development environment similar to PlatformIO will be created that runs in your browser with all code components. To compile the software, enter ***bash run*** in the terminal. In the workspace you will find the compiled binary code under ***.pio/build/heltec_wifi_lora_32_V2/firmware.bin***. With a right click you can download the binary file. You need a account for Gitpod.
 ## Device flash process
 
 With the [Web Flash Tool](https://norbert-walter.github.io/LoRa-Boat-Monitor/flash_tool/esp_flash_tool.html) you can very easily flash the device with the firmware from the web browser. You need a Chrome or Edge browser and a USB connection cable. If the device is connected to the USB port of the computer, the serial connection can be selected and the flash process can then be started.
