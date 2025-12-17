@@ -1,0 +1,19 @@
+{
+  "name": "LoRa Boat Monitor (PlatformIO / ESP32)",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "workspaceFolder": "/workspace",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "platformio.platformio-ide"
+      ],
+      "settings": {
+        "platformio-ide.useBuiltinPIOCore": true
+      }
+    }
+  },
+  "containerUser": "coder",
+  "remoteUser": "coder"
+}
